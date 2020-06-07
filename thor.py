@@ -9,19 +9,11 @@ import logging
 import argparse
 import sys
 import os
-import re
-import subprocess
+from core import scanner
+from core.utils import is_docker_installed
 
-docker_version = subprocess.check_output('docker -v', shell=True).decode('utf-8')
-
-def check_for_docker():
-    if not re.compile(r'version').search(docker_version):
-        logging.error("Docker needs to be installed")
-        sys.exit(0)
-
-   
-async def scan_file(file):
-    print("asdf")
+def scan_file(file):
+    scanner.scan_file(file)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -34,7 +26,9 @@ if __name__ == '__main__':
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.ERROR, format='%(levelname)s: %(message)s')
 
-    check_for_docker()
+    if not is_docker_installed():
+        logging.error("Docker needs to be installed")
+        sys.exit(0)
 
     try:
         if args.file:
@@ -47,7 +41,7 @@ if __name__ == '__main__':
             parser.print_help()
             sys.exit(0)
 
-        asyncio.run(my_function(*my_args))
+        my_function(*my_args)
 
     except KeyboardInterrupt:
         pass
