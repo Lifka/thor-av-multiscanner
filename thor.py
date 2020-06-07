@@ -4,16 +4,23 @@
 # Created by Javier Izquierdo Vera. <javierizquierdovera.com>.
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
-import asyncio
 import logging
 import argparse
 import sys
 import os
+import asyncio
 from core import scanner
 from core.utils import is_docker_installed
 
-def scan_file(file):
-    scanner.scan_file(file)
+loop = asyncio.get_event_loop()
+
+def scan_file_command(file):
+    loop.run_until_complete(scanner.scan_file_async(file, loop))
+
+def exit():
+    loop.close()
+    sys.exit(0)
+
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -28,18 +35,18 @@ if __name__ == '__main__':
 
     if not is_docker_installed():
         logging.error("Docker needs to be installed")
-        sys.exit(0)
+        exit()
 
     try:
         if args.file:
-            my_function, my_args = scan_file, (args.file,)
+            my_function, my_args = scan_file_command, (args.file,)
         elif args.list_avs:
             print("TODO")
         elif args.update_avs:
             print("TODO")
         else:
             parser.print_help()
-            sys.exit(0)
+            exit()
 
         my_function(*my_args)
 
