@@ -16,15 +16,16 @@ DOCKER_CONFIG_PATH = 'docker_configuration.json'
 loop = asyncio.get_event_loop()
 
 def scan_file(file):
-    config = get_docker_configuration(DOCKER_CONFIG_PATH)
-    result = loop.run_until_complete(scanner.scan_file_async(file, config, loop))
+    result = loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop))
     print(result)
 
 def list_available_antivirus():
-    config = get_docker_configuration(DOCKER_CONFIG_PATH)
-    result = scanner.list_available_antivirus(config)
+    result = scanner.list_available_antivirus(get_docker_configuration(DOCKER_CONFIG_PATH))
     print(result)
 
+def update_antivirus():
+    result = loop.run_until_complete(scanner.update_antivirus_async(get_docker_configuration(DOCKER_CONFIG_PATH), loop))
+    print(result)
 
 def exit(with_help=False):
     if with_help:
@@ -60,7 +61,7 @@ if __name__ == '__main__':
         elif args.list_avs:
             my_function, my_args = list_available_antivirus, ()
         elif args.update_avs:
-            print("TODO")
+            my_function, my_args = update_antivirus, ()
         else:
             exit(True)
 

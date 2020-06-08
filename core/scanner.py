@@ -23,7 +23,12 @@ def list_available_antivirus(docker_configuration):
         result.append(antivirus['name'])
     return result
 
-
+async def update_antivirus_async(docker_configuration, loop):
+    results = []
+    for antivirus in docker_configuration:
+        results.append(loop.create_task(run_docker_command(antivirus['update_command'])))
+    await asyncio.wait(results)
+    return results
 
 async def run_docker_command(command):
     return await exec('docker run {0}'.format(command))

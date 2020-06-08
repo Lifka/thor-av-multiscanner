@@ -2,6 +2,6 @@
     {
         "name":"AVG AntiVirus",
         "scan_command": "--rm -v \"{}:/malware/malware.exe\" malice/avg {}",
-        "update_command": "asdf"
+        "update_command": "malice/avg update"
     }
 ]
