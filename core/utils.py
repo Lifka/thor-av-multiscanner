@@ -10,6 +10,7 @@ import re
 import subprocess
 import asyncio
 import os
+import json
 
 def get_Docker_version():
     return asyncio.run(exec('docker -v'))
@@ -31,4 +32,15 @@ async def exec(command):
 
 def is_a_valid_file(file):
     return os.path.isfile(file) and os.access(file, os.R_OK)
-    
+
+def get_docker_configuration(file='docker_configuration.json'):
+    with open(file) as json_file:
+        config = json.load(json_file)
+    return config
+
+def is_docker_configuration_available(file='docker_configuration.json'):
+    try:
+        config = get_docker_configuration(file)
+    except Exception as e:
+        pass
+    return config and type(config)==list

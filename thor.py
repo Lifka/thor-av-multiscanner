@@ -10,12 +10,13 @@ import sys
 import os
 import asyncio
 from core import scanner
-from core.utils import is_docker_installed, is_a_valid_file
+from core.utils import is_docker_installed, is_a_valid_file, is_docker_configuration_available, get_docker_configuration
 
+DOCKER_CONFIG_PATH = 'docker_configuration.json'
 loop = asyncio.get_event_loop()
 
 def scan_file(file):
-    results = loop.run_until_complete(scanner.scan_file_async(file, loop))
+    results = loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop))
     print(results)
 
 def list_avs():
@@ -41,6 +42,10 @@ if __name__ == '__main__':
 
     if not is_docker_installed():
         logging.error("Docker needs to be installed")
+        exit()
+
+    if not is_docker_configuration_available(DOCKER_CONFIG_PATH):
+        logging.error("Configuration is not valid or is not accessible. Please, check that file {} exists".format(DOCKER_CONFIG_PATH))
         exit()
 
     try:
