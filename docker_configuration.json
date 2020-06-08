@@ -1,0 +1,7 @@
+[
+    {
+        "name":"AVG",
+        "scan_command": "docker run --rm -v \"{0}:/malware/malware.exe\" malice/avg {1}'",
+        "update_command": "asdf"
+    }
+]

@@ -9,6 +9,7 @@ import subprocess
 import re
 import subprocess
 import asyncio
+import os
 
 def get_Docker_version():
     return asyncio.run(exec('docker -v'))
@@ -27,3 +28,7 @@ async def exec(command):
         stderr=asyncio.subprocess.PIPE)
     stdout, stderr = await proc.communicate()
     return stdout.decode()
+
+def is_a_valid_file(file):
+    return os.path.isfile(file) and os.access(file, os.R_OK)
+    

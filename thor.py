@@ -10,17 +10,23 @@ import sys
 import os
 import asyncio
 from core import scanner
-from core.utils import is_docker_installed
+from core.utils import is_docker_installed, is_a_valid_file
 
 loop = asyncio.get_event_loop()
 
-def scan_file_command(file):
-    loop.run_until_complete(scanner.scan_file_async(file, loop))
+def scan_file(file):
+    results = loop.run_until_complete(scanner.scan_file_async(file, loop))
+    print(results)
 
-def exit():
+def list_avs():
+    print('TODO')
+
+
+def exit(with_help=False):
+    if with_help:
+        parser.print_help()
     loop.close()
     sys.exit(0)
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -39,14 +45,16 @@ if __name__ == '__main__':
 
     try:
         if args.file:
-            my_function, my_args = scan_file_command, (args.file,)
+            if not is_a_valid_file(args.file):
+                logging.error("File is missing or not readable")
+                exit(True)
+            my_function, my_args = scan_file, (args.file,)
         elif args.list_avs:
-            print("TODO")
+            my_function, my_args = list_avs, ()
         elif args.update_avs:
             print("TODO")
         else:
-            parser.print_help()
-            exit()
+            exit(True)
 
         my_function(*my_args)
 
