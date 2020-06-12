@@ -1,14 +1,14 @@
 # Thor AV Multiscanner
 Scan files locally with various antivirus using Docker.
 
-# CLI
+## CLI
 
-# Web APP
+## Web APP
 
-# Configuration
+## Configuration
 
-# AntiVirus
+## AntiVirus
 
-# About
+## About
 
-# Copyright
+## Copyright
