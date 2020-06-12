@@ -1,0 +1,26 @@
+ 
+{% extends "layout.html" %}
+
+{% block content %}
+
+<div class="row d-flex justify-content-center mt-100">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5>Choose File</h5>
+            </div>
+            <div class="card-block">
+                <form action="/file-upload" id="myAwesomeDropzone" method="POST" enctype="multipart/form-data" class="dropzone">
+                    <div class="fallback">
+                      <input name="file" type="file" />
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
+<script src="{{url_for('static', filename='js/custom-dropzone.js')}}"></script>
+
+{% endblock%}
