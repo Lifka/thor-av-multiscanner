@@ -1,4 +1,3 @@
- 
 {% extends "layout.html" %}
 
 {% block content %}
@@ -9,18 +8,39 @@
             <div class="card-header">
                 <h5>Choose File</h5>
             </div>
+
+            <script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
+            <script type="text/javascript">
+                Dropzone.autoDiscover = false;
+                $(document).ready(function () {
+                     $("#myAwesomeDropzone").dropzone({
+                        maxFiles: 1,
+                        uploadMultiple: false,
+                        paramName: "file", // The name that will be used to transfer the file
+                        maxFilesize: 9999, // MB
+                        dictDefaultMessage: 'Drop files here to scan',
+                        init: function() {
+                            this.on("error", function(file, response) {
+                                $("#error").html('<div class="alert alert-danger" role="alert">' + response + '</div>');
+                            });
+
+                        }
+                     });
+                })
+            </script>
+
             <div class="card-block">
-                <form action="/file-upload" id="myAwesomeDropzone" method="POST" enctype="multipart/form-data" class="dropzone">
-                    <div class="fallback">
-                      <input name="file" type="file" />
-                    </div>
+                <div id="error"></div>
+                <form action="/file-upload"
+                    method="POST"
+                    enctype="multipart/form-data"
+                    class="dropzone dropzone-previews"
+                    id="myAwesomeDropzone">
                 </form>
             </div>
         </div>
     </div>
 </div>
 
-<script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
-<script src="{{url_for('static', filename='js/custom-dropzone.js')}}"></script>
 
 {% endblock%}
