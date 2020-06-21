@@ -5,6 +5,7 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 import os, datetime
+import hashlib
 from flask import Flask, render_template, request, redirect, url_for, send_from_directory
 from werkzeug.utils import secure_filename
 import asyncio
@@ -29,7 +30,7 @@ def about():
 def save_file(file):
     timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
     filename = "{}__{}".format(timestamp, secure_filename(file.filename))
-    path = os.path.join(app.config["VAULT"], timestamp + filename)
+    path = os.path.join(app.config["VAULT"], filename)
     file.save(path)
     return path
        
@@ -48,8 +49,6 @@ def upload_file():
 
         file_path = save_file(file)
         print("Sent file --> {}: {}".format(file_path, file))
-        #redirect(url_for("file_analysis", filename=filename))
-        file_analysis(file_path)
 
     return home()
 
@@ -60,11 +59,24 @@ def scan_file(file_path):
     loop.close()
     return result
 
-@app.route('/file-analysis/<filename>')
-def file_analysis(file_path):
+def md5(fname):
+    hash_md5 = hashlib.md5()
+    with open(fname, "rb") as f:
+        for chunk in iter(lambda: f.read(4096), b""):
+            hash_md5.update(chunk)
+    return hash_md5.hexdigest()
+
+@app.route('/file-analysis/<hash>')
+def file_analysis(hash):
     #return send_from_directory(app.config['VAULT'], filename)
     #result = scan_file(file_path)
     #print("OK {}: {}".format(file_path, result))
+    
+    files = [f for f in os.listdir(app.config["VAULT"]) if md5(os.path.join(app.config["VAULT"], f)) == hash]
+    if not files:
+        return home()
+
+    print("Get result --> {}".format(files))
     return render_template("scan-results.html")
 
 if __name__ == '__main__':

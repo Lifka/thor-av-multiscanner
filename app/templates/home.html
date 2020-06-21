@@ -8,7 +8,7 @@
             <div class="card-header">
                 <h5>Choose File</h5>
             </div>
-
+            <script src="https://cdn.rawgit.com/CryptoStore/crypto-js/3.1.2/build/rollups/md5.js"></script>
             <script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
             <script type="text/javascript">
                 Dropzone.autoDiscover = false;
@@ -23,7 +23,18 @@
                             this.on("error", function(file, response) {
                                 $("#error").html('<div class="alert alert-danger" role="alert">' + response + '</div>');
                             });
+                            this.on("complete", function (file) {
+                                if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
 
+                                    var reader = new FileReader();
+                                    reader.onload = function() {
+                                        var encrypted = CryptoJS.algo.MD5.create().update(reader.result).finalize();
+                                        window.location.replace("/file-analysis/" + encrypted);
+                                    }
+
+                                    reader.readAsText(file)
+                                }
+                            });
                         }
                      });
                 })
