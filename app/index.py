@@ -5,7 +5,8 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 from flask import Flask, render_template, request
-from utils import get_file_by_hash, save_file
+from utils import get_file_by_hash, save_file, md5
+import json
 
 import asyncio
 from functools import wraps
@@ -26,19 +27,19 @@ def about():
        
 @app.route('/upload-file', methods=["POST"])
 def upload_file():
-    if request.method == 'POST':
-        if 'file' not in request.files:
-            print("[upload_file] Upload error")
-            return home()
+    if request.method != 'POST':
+        return;
 
-        file = request.files["file"] 
-        if not file.filename:
-            print("[upload_file] Empty file")
-            return home()
+    if 'file' not in request.files:
+        print("[upload_file] Upload error")
 
-        file_path = save_file(file, app.config["VAULT"])
-        print("[upload_file] Sent file -> {}: {}".format(file_path, file))
-    return home()
+    file = request.files["file"] 
+    if not file.filename:
+        print("[upload_file] Empty file")
+
+    file_path = save_file(file, app.config["VAULT"])
+    print("[upload_file] Sent file -> {}: {}".format(file_path, file))
+    return json.dumps({"result": "OK", "hash":'{}'.format(md5(file_path))})
 
 @app.route('/file-analysis/<hash>')
 def file_analysis(hash):

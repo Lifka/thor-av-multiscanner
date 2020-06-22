@@ -8,12 +8,10 @@
             <div class="card-header">
                 <h5>Choose File</h5>
             </div>
-            <script src="https://cdn.rawgit.com/CryptoStore/crypto-js/3.1.2/build/rollups/md5.js"></script>
             <script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
             <script type="text/javascript">
                 Dropzone.autoDiscover = false;
                 $(document).ready(function () {
-                    $('#loading').hide();
                     $("#myAwesomeDropzone").dropzone({
                         maxFiles: 1,
                         uploadMultiple: false,
@@ -24,23 +22,10 @@
                             this.on("error", function(file, response) {
                                 $("#error").html('<div class="alert alert-danger" role="alert">' + response + '</div>');
                             });
-                            this.on("complete", function (file) {
-                                if (file.status != 'error' && this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
-                                    $('#loading').show();
-                                    this.removeEventListeners();
-                                    var reader = new FileReader();
-                                    reader.onload = function() {
-                                        var encrypted = CryptoJS.MD5(reader.result).toString(CryptoJS.enc.Hex);
-                                        console.log(encrypted);
-                                        window.location.replace("/file-analysis/" + encrypted);
-                                        $('#loading').hide();
-                                    }
-
-                                    reader.readAsText(file)
-                                } else {
-                                    this.removeAllFiles( true );
-                                    $('#loading').hide();
-                                }
+                            this.on("success", function(file, response) {
+                                var reponse_json = jQuery.parseJSON(response)
+                                console.log(reponse_json);
+                                window.location.replace("/file-analysis/" + reponse_json.hash);
                             });
                         }
                      });
@@ -54,13 +39,6 @@
                     enctype="multipart/form-data"
                     class="dropzone dropzone-previews"
                     id="myAwesomeDropzone">
-                    <div id="loading">
-                        <div class="d-flex justify-content-center">
-                            <div class="spinner-border text-primary" role="status">
-                                <span class="sr-only">Processing...</span>
-                            </div>
-                        </div>
-                    </div>
                 </form>
             </div>
         </div>
