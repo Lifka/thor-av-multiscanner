@@ -24,7 +24,7 @@
                                 $("#error").html('<div class="alert alert-danger" role="alert">' + response + '</div>');
                             });
                             this.on("complete", function (file) {
-                                if (this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
+                                if (file.status != 'error' && this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
 
                                     var reader = new FileReader();
                                     reader.onload = function() {
