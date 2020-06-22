@@ -24,7 +24,7 @@ def home():
 def about():
     return render_template("about.html")
        
-@app.route('/file-upload', methods=["POST"])
+@app.route('/upload-file', methods=["POST"])
 def upload_file():
     if request.method == 'POST':
         if 'file' not in request.files:
@@ -44,8 +44,10 @@ def upload_file():
 def file_analysis(hash):
     files = get_file_by_hash(hash, app.config["VAULT"])
     if not files:
+        print("[file_analysis] No file(s) found for hash -> {}".format(hash))
         return home()
     print("[file_analysis] Get results from -> {}".format(files))
+    app.config["current_file"] = files[0]
     return render_template("scan-results.html")
 
 def async_action(f):
@@ -57,7 +59,7 @@ def async_action(f):
 @app.route('/file-analysis/<hash>/result', methods=["POST"])
 @async_action
 async def file_analysis_result(hash):
-    result = scan_file(get_file_by_hash(hash, app.config["VAULT"])[0])
+    result = scan_file(app.config["current_file"])
 
     return result
 

@@ -13,11 +13,12 @@
             <script type="text/javascript">
                 Dropzone.autoDiscover = false;
                 $(document).ready(function () {
+                    $('#loading').hide();
                     $("#myAwesomeDropzone").dropzone({
                         maxFiles: 1,
                         uploadMultiple: false,
-                        paramName: "file", // The name that will be used to transfer the file
-                        maxFilesize: 9999, // MB
+                        paramName: "file", 
+                        maxFilesize: 9999, 
                         dictDefaultMessage: 'Drop files here to scan',
                         init: function() {
                             this.on("error", function(file, response) {
@@ -25,14 +26,20 @@
                             });
                             this.on("complete", function (file) {
                                 if (file.status != 'error' && this.getUploadingFiles().length === 0 && this.getQueuedFiles().length === 0) {
-
+                                    $('#loading').show();
+                                    this.removeEventListeners();
                                     var reader = new FileReader();
                                     reader.onload = function() {
-                                        var encrypted = CryptoJS.algo.MD5.create().update(reader.result).finalize();
+                                        var encrypted = CryptoJS.MD5(reader.result).toString(CryptoJS.enc.Hex);
+                                        console.log(encrypted);
                                         window.location.replace("/file-analysis/" + encrypted);
+                                        $('#loading').hide();
                                     }
 
                                     reader.readAsText(file)
+                                } else {
+                                    this.removeAllFiles( true );
+                                    $('#loading').hide();
                                 }
                             });
                         }
@@ -42,11 +49,18 @@
 
             <div class="card-block">
                 <div id="error"></div>
-                <form action="/file-upload"
+                <form action="/upload-file"
                     method="POST"
                     enctype="multipart/form-data"
                     class="dropzone dropzone-previews"
                     id="myAwesomeDropzone">
+                    <div id="loading">
+                        <div class="d-flex justify-content-center">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="sr-only">Processing...</span>
+                            </div>
+                        </div>
+                    </div>
                 </form>
             </div>
         </div>

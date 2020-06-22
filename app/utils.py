@@ -12,9 +12,10 @@ def md5(fname):
     with open(fname, "rb") as f:
         for chunk in iter(lambda: f.read(4096), b""):
             hash_md5.update(chunk)
-    return hash_md5.hexdigest()
+    return hash_md5.hexdigest().upper()
 
 def get_file_by_hash(hash, path):
+    hash = hash.upper()
     return [f for f in os.listdir(path) if md5(os.path.join(path, f)) == hash]
 
 def save_file(file, vault):
