@@ -10,6 +10,7 @@
             </div>
             <script src="{{url_for('static', filename='js/dropzone.min.js')}}"></script>
             <script type="text/javascript">
+                display_error = (message) => { $("#error").html('<div class="alert alert-danger" role="alert">' + message + '</div>'); };
                 Dropzone.autoDiscover = false;
                 $(document).ready(function () {
                     $("#myAwesomeDropzone").dropzone({
@@ -20,12 +21,16 @@
                         dictDefaultMessage: 'Drop files here to scan',
                         init: function() {
                             this.on("error", function(file, response) {
-                                $("#error").html('<div class="alert alert-danger" role="alert">' + response + '</div>');
+                                display_error(response);
                             });
                             this.on("success", function(file, response) {
                                 var reponse_json = jQuery.parseJSON(response)
                                 console.log(reponse_json);
-                                window.location.replace("/file-analysis/" + reponse_json.hash);
+                                if (reponse_json.status === 'error'){
+                                    display_error(reponse_json.message);
+                                    this.removeAllFiles();
+                                } else if (reponse_json.status === 'success')
+                                    window.location.replace("/file-analysis/" + reponse_json.hash);
                             });
                         }
                      });

@@ -29,18 +29,18 @@ def about():
 @app.route('/upload-file', methods=["POST"])
 def upload_file():
     if request.method != 'POST':
-        return json.dumps({"result": "error", "message": "No POST request"})
+        return json.dumps({"status": "error", "message": "No POST request"})
 
     if 'file' not in request.files:
-        return json.dumps({"result": "error", "message": "Upload error"})
+        return json.dumps({"status": "error", "message": "Incorrect request. It was expected to receive the file using POST."})
 
     file = request.files["file"] 
     if not file.filename:
-        return json.dumps({"result": "error", "message": "Empty file"})
+        return json.dumps({"status": "error", "message": "Empty file."})
 
     file_path = save_file(file, app.config["VAULT"])
     print("[upload_file] Sent file -> {}: {}".format(file_path, file))
-    return json.dumps({"result": "success", "hash":'{}'.format(md5(file_path))})
+    return json.dumps({"status": "success", "hash":'{}'.format(md5(file_path))})
 
 @app.route('/file-analysis/<hash>')
 def file_analysis(hash):

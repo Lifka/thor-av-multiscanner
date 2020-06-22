@@ -14,7 +14,7 @@ DOCKER_CONFIG_PATH = "docker_configuration.json"
 def scan_file(file):
     result = 'ok'
     loop = asyncio.get_event_loop()
-    #result = loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop))
+    result = loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop))
     #loop.close()
     return result
     
