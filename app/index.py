@@ -7,12 +7,14 @@
 from flask import Flask, render_template, request
 from utils import get_file_by_hash, save_file
 
+import asyncio
+from functools import wraps
+from scanner_wrapper import scan_file
+
 VAULT = "vault"
-DOCKER_CONFIG_PATH = "docker_configuration.json"
 
 app = Flask(__name__)
 app.config["VAULT"] = VAULT
-app.config["DOCKER_CONFIG_PATH"] = DOCKER_CONFIG_PATH
 
 @app.route('/')
 def home():
@@ -45,6 +47,19 @@ def file_analysis(hash):
         return home()
     print("[file_analysis] Get results from -> {}".format(files))
     return render_template("scan-results.html")
+
+def async_action(f):
+    @wraps(f)
+    def wrapped(*args, **kwargs):
+        return asyncio.run(f(*args, **kwargs))
+    return wrapped
+
+@app.route('/file-analysis/<hash>/result', methods=["POST"])
+@async_action
+async def file_analysis_result(hash):
+    result = scan_file(get_file_by_hash(hash, app.config["VAULT"])[0])
+
+    return result
 
 if __name__ == '__main__':
     app.run(debug=True)

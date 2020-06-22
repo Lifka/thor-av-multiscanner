@@ -5,23 +5,22 @@
 <script type="text/javascript">
     $(document).ready(function () {
 
-        function postData(hash) {
-            console.print("Getting result from " + hash);
+        function getResult() {
+            let url = $(location).attr('href'),
+            parts = url.split("/")
             $.ajax({
                 type: "POST",
-                url: "/scanner-wrapper.py",
-                data: { param: hash },
-                success: callbackFunc
+                url: parts[parts.length-1] + "/result",
+                success: result
             });
         }
 
-        function callbackFunc(response) {
-            // do something with the response
+        function result(response) {
             console.log(response);
             $("#result").html(response);
         }
+        getResult();
     })
-    //postData(this.href.substring(this.href.lastIndexOf('/') + 1));
 </script>
 
 <div class="row d-flex justify-content-center mt-100">
@@ -31,7 +30,7 @@
                 <h5>Scan result</h5>
             </div>
             <div class="card-block">
-                <div id="#result">
+                <div id="result">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border text-primary" role="status">
                             <span class="sr-only">Scanning...</span>
