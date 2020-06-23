@@ -13,7 +13,7 @@ async def scan_file_async(file_path, docker_configuration, loop):
     file_name = path_leaf(file_path)
     results = []
     for antivirus in docker_configuration:
-        results.append(loop.create_task(run_docker_command(antivirus['scan_command'].format(file_path, file_name))))
+        results.append(loop.create_task(run_docker_command(antivirus['scan_command'].format(File_path=file_path, File_name=file_name))))
     await asyncio.wait(results)
     return results
 
