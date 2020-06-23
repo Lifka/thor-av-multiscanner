@@ -11,11 +11,10 @@ from core.utils import path_leaf, exec
 
 async def scan_file_async(file_path, docker_configuration, loop):
     file_name = path_leaf(file_path)
-    results = []
+    tasks = []
     for antivirus in docker_configuration:
-        results.append(loop.create_task(run_docker_command(antivirus['scan_command'].format(File_path=file_path, File_name=file_name))))
-    await asyncio.wait(results)
-    return results
+        tasks.append(loop.create_task(run_docker_command(antivirus['scan_command'].format(File_path=file_path, File_name=file_name))))
+    return await asyncio.gather(*tasks)
 
 def list_available_antivirus(docker_configuration):
     result = []
@@ -24,11 +23,10 @@ def list_available_antivirus(docker_configuration):
     return result
 
 async def update_antivirus_async(docker_configuration, loop):
-    results = []
+    tasks = []
     for antivirus in docker_configuration:
-        results.append(loop.create_task(run_docker_command(antivirus['update_command'])))
-    await asyncio.wait(results)
-    return results
+        tasks.append(loop.create_task(run_docker_command(antivirus['update_command'])))
+    return await asyncio.gather(*tasks)
 
 async def run_docker_command(command):
     return await exec('docker run {0}'.format(command))

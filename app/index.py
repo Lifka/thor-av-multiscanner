@@ -7,16 +7,15 @@
 from utils import get_file_by_hash, save_file, md5
 import json
 
-import asyncio
-from functools import wraps
+from quart import Quart, render_template, request
 from scanner_wrapper import scan_file
 
-from quart import Quart, render_template, request
-
 VAULT = "vault"
+DOCKER_CONFIG_PATH = "docker_configuration.json"
 
 app = Quart(__name__)
 app.config["VAULT"] = VAULT
+app.config["DOCKER_CONFIG_PATH"] = DOCKER_CONFIG_PATH
 app.config["files_by_hash"] = {}
 
 @app.route('/')
@@ -58,9 +57,12 @@ async def file_analysis_result(hash):
     if hash not in app.config["files_by_hash"]:
         app.config["files_by_hash"][hash] = get_file_by_hash(hash)
     print('file_analysis_result from -> {}'.format(app.config["files_by_hash"][hash]))
-    result = scan_file(app.config["files_by_hash"][hash])
-
-    return await result
+    analysis = scan_file(app.config["files_by_hash"][hash], app.config["DOCKER_CONFIG_PATH"])
+    result = await analysis
+    print('--------------------------------')
+    print(result)
+    print('--------------------------------')
+    return result[0]
 
 if __name__ == '__main__':
     app.run(debug=True)
