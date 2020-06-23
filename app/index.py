@@ -53,24 +53,14 @@ async def file_analysis(hash):
     app.config["files_by_hash"][hash] = files[0]
     return await render_template("scan-results.html")
 
-
-def async_action(f):
-    @wraps(f)
-    def wrapped(*args, **kwargs):
-        return asyncio.run(f(*args, **kwargs))
-    return wrapped
-
 @app.route('/file-analysis/<hash>/result', methods=["POST"])
-@async_action
 async def file_analysis_result(hash):
     if hash not in app.config["files_by_hash"]:
         app.config["files_by_hash"][hash] = get_file_by_hash(hash)
     print('file_analysis_result from -> {}'.format(app.config["files_by_hash"][hash]))
-    #result = scan_file(app.config["files_by_hash"][hash])
+    result = scan_file(app.config["files_by_hash"][hash])
 
-    #await asyncio.wait(result)
-    return 'ToDo'
-
+    return await result
 
 if __name__ == '__main__':
     app.run(debug=True)

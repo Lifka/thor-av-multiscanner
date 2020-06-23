@@ -8,16 +8,9 @@ import asyncio
 from core import scanner
 from core.utils import is_docker_installed, is_a_valid_file, is_docker_configuration_available, get_docker_configuration
 
-
 DOCKER_CONFIG_PATH = "docker_configuration.json"
 
 async def scan_file(file):
-    result = 'ok'
     loop = asyncio.get_event_loop()
-    result = scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop)
-    await asyncio.wait(result)
+    result = await scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop)
     return result
-    #result = loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop))
-    #loop.close()
-    #return result
-    
