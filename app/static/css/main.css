@@ -55,21 +55,12 @@ body {
     margin-top: 20px
 }
 
-.btn-primary,
-.sweet-alert button.confirm,
-.wizard>.actions a {
-    background-color: #4099ff;
-    border-color: #4099ff;
-    color: #fff;
-    cursor: pointer;
-    -webkit-transition: all ease-in .3s;
-    transition: all ease-in .3s
+.icon-clean{
+    padding-right: 5px;
+    color: #22b574;
 }
 
-.btn {
-    border-radius: 2px;
-    text-transform: capitalize;
-    font-size: 15px;
-    padding: 10px 19px;
-    cursor: pointer
+.icon-infected{
+    padding-right: 5px;
+    color: #ff1f4b
 }

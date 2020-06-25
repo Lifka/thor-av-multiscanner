@@ -8,5 +8,5 @@ import asyncio
 from core import scanner
 from core.utils import is_docker_installed, is_a_valid_file, is_docker_configuration_available, get_docker_configuration
 
-async def scan_file(file, config):
-    return await scanner.scan_file_async(file, get_docker_configuration(config), asyncio.get_event_loop())
+async def scan_file(file_path, config):
+    return await scanner.scan_file_async(file_path, get_docker_configuration(config), asyncio.get_event_loop())

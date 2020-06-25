@@ -3,5 +3,10 @@
         "name":"AVG AntiVirus",
         "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/avg {File_name}",
         "update_command": "malice/avg update"
+    },
+    {
+        "name":"AVG AntiVirus 2",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/avg {File_name}",
+        "update_command": "malice/avg update"
     }
 ]

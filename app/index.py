@@ -5,7 +5,7 @@
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
 from utils import get_file_by_hash, save_file, md5
-import json
+import json, os
 
 from quart import Quart, render_template, request
 from scanner_wrapper import scan_file
@@ -56,13 +56,26 @@ async def file_analysis(hash):
 async def file_analysis_result(hash):
     if hash not in app.config["files_by_hash"]:
         app.config["files_by_hash"][hash] = get_file_by_hash(hash)
-    print('file_analysis_result from -> {}'.format(app.config["files_by_hash"][hash]))
-    analysis = scan_file(app.config["files_by_hash"][hash], app.config["DOCKER_CONFIG_PATH"])
+    analysis = scan_file(os.path.join(app.config["VAULT"], app.config["files_by_hash"][hash]), app.config["DOCKER_CONFIG_PATH"])
     result = await analysis
-    print('--------------------------------')
-    print(result)
-    print('--------------------------------')
-    return result[0]
+    return await parse_analysis_results(result)
+
+async def parse_analysis_results(results):
+    result_html = '<table class="table table-striped"><tbody>'
+    for av_result in results:
+        try:
+            av_result_object = json.loads(av_result)
+        except ValueError as e:
+            result_html = 'Error receiving data from the scanner. Received: {}. Error: {}'.format(results, str(e))
+            return result_html
+        av_name = list(av_result_object.keys())[0]
+        av_result = av_result_object[av_name]
+        if av_result['infected']:
+            result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td>".format(av_name, av_result['result'])
+        else:
+            result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
+    result_html += '</tbody></table>'
+    return result_html
 
 if __name__ == '__main__':
     app.run(debug=True)
