@@ -56,18 +56,23 @@ async def file_analysis(hash):
 async def file_analysis_result(hash):
     if hash not in app.config["files_by_hash"]:
         app.config["files_by_hash"][hash] = get_file_by_hash(hash)
-    analysis = scan_file(os.path.join(app.config["VAULT"], app.config["files_by_hash"][hash]), app.config["DOCKER_CONFIG_PATH"])
-    result = await analysis
-    return await parse_analysis_results(result)
+    table_html_scan_results = ''
+    error_message = ''
+    try:
+        analysis = scan_file(os.path.join(app.config["VAULT"], app.config["files_by_hash"][hash]), app.config["DOCKER_CONFIG_PATH"])
+        result = await analysis
+        table_html_scan_results = await parse_analysis_results(result)
+        status = 'success'
+    except Exception as e:
+        error_message = 'Error receiving data from the scanner. Error: {}'.format(str(e))
+        status = 'error'
+
+    return json.dumps({"status": '{}'.format(status), "table_html_scan_results":'{}'.format(table_html_scan_results), "error_message":'{}'.format(error_message)})
 
 async def parse_analysis_results(results):
     result_html = '<table class="table table-striped"><tbody>'
     for av_result in results:
-        try:
-            av_result_object = json.loads(av_result)
-        except ValueError as e:
-            result_html = 'Error receiving data from the scanner. Received: {}. Error: {}'.format(results, str(e))
-            return result_html
+        av_result_object = json.loads(av_result)
         av_name = list(av_result_object.keys())[0]
         av_result = av_result_object[av_name]
         if av_result['infected']:

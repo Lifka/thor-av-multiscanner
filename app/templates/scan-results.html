@@ -4,7 +4,8 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-
+        display_error = (message) => { $("#error").html('<div class="alert alert-danger" role="alert">' + message + '</div>'); };
+        display_scan_results = (results) => { $("#scan_results").html(results); };
         function getResult() {
             let url = $(location).attr('href'),
             parts = url.split("/")
@@ -16,8 +17,13 @@
         }
 
         function result(response) {
-            console.log(response);
-            $("#result").html(response);
+            reponse_json = jQuery.parseJSON(response)
+            if (reponse_json.status === 'error'){
+                display_error(reponse_json.error_message);
+                display_scan_results('');
+            } else if (reponse_json.status === 'success'){
+                display_scan_results(reponse_json.table_html_scan_results);
+            }
         }
         getResult();
     })
@@ -25,12 +31,13 @@
 
 <div class="row d-flex justify-content-center mt-100">
     <div class="col-md-8">
+        <div id="error"></div>
         <div class="card">
             <div class="card-header">
                 <h5>Scan result</h5>
             </div>
             <div class="card-block">
-                <div id="result">
+                <div id="scan_results">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border text-primary" role="status">
                             <span class="sr-only">Scanning...</span>
