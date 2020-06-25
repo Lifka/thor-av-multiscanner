@@ -76,7 +76,7 @@ async def parse_analysis_results(results):
         av_name = list(av_result_object.keys())[0]
         av_result = av_result_object[av_name]
         if av_result['infected']:
-            result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td>".format(av_name, av_result['result'])
+            result_html += "<tr><td class='av_name'>{}</td><td class='av_result infected'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td>".format(av_name, av_result['result'])
         else:
             result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
     result_html += '</tbody></table>'

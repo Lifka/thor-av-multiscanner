@@ -1,3 +1,8 @@
+:root {
+    --infected-color: brown;
+    --clean-color: #22b574;
+  }
+
 body {
     background-color: #f2f7fb
 }
@@ -57,10 +62,14 @@ body {
 
 .icon-clean{
     padding-right: 5px;
-    color: #22b574;
+    color: var(--clean-color);;
 }
 
 .icon-infected{
     padding-right: 5px;
-    color: #ff1f4b
+    color: var(--infected-color);;
+}
+
+.av_result.infected{
+    color: var(--infected-color);;
 }
