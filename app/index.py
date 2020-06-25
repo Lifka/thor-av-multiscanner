@@ -4,11 +4,12 @@
 # Created by Javier Izquierdo Vera. <javierizquierdovera.com>.
 # This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
 
-from utils import get_file_by_hash, save_file, md5
+from utils import get_file_by_hash_in_dir, save_file, get_file_hash
 import json, os
+from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file
+from scanner_wrapper import scan_file, get_file_info
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -40,26 +41,30 @@ async def upload_file():
 
     file_path = save_file(file, app.config["VAULT"])
     print("[upload_file] Sent file -> {}: {}".format(file_path, file))
-    return json.dumps({"status": "success", "hash":'{}'.format(md5(file_path))})
+    return json.dumps({"status": "success", "hash":'{}'.format(get_file_hash(file_path))})
 
 @app.route('/file-analysis/<hash>')
 async def file_analysis(hash):
-    files = get_file_by_hash(hash, app.config["VAULT"])
+    files = get_file_by_hash_in_dir(hash, app.config["VAULT"])
     if not files:
         print("[file_analysis] No file(s) found for hash -> {}".format(hash))
         return home()
     print("[file_analysis] Get results from -> {}".format(files))
-    app.config["files_by_hash"][hash] = files[0]
+    app.config["files_by_hash"][hash] = os.path.join(app.config["VAULT"], files[0])
     return await render_template("scan-results.html")
 
-@app.route('/file-analysis/<hash>/result', methods=["POST"])
-async def file_analysis_result(hash):
+def get_file(hash):
     if hash not in app.config["files_by_hash"]:
-        app.config["files_by_hash"][hash] = get_file_by_hash(hash)
+        app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
+    return app.config["files_by_hash"][hash]
+
+
+@app.route('/file-analysis/<hash>/detection', methods=["POST"])
+async def file_analysis_result(hash):
     table_html_scan_results = ''
     error_message = ''
     try:
-        analysis = scan_file(os.path.join(app.config["VAULT"], app.config["files_by_hash"][hash]), app.config["DOCKER_CONFIG_PATH"])
+        analysis = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
         result = await analysis
         table_html_scan_results = await parse_analysis_results(result)
         status = 'success'
@@ -81,6 +86,23 @@ async def parse_analysis_results(results):
             result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
     result_html += '</tbody></table>'
     return result_html
+
+@app.route('/file-analysis/<hash>/info', methods=["POST"])
+async def file_analysis_info(hash):
+    html_file_info = ''
+    error_message = ''
+
+    file = get_file(hash)
+    try:
+        name = ''.join(file.split('_')[2:])
+        status = 'success'
+        html_file_info = json.loads(get_file_info(file))
+    except Exception as e:
+        error_message = 'File error: {}'.format(str(e))
+        status = 'error'
+        
+    return json.dumps({"status": '{}'.format(status), "html_file_info":'{}'.format(html_file_info), "error_message":'{}'.format(error_message)})
+
 
 if __name__ == '__main__':
     app.run(debug=True)
