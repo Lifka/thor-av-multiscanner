@@ -54,8 +54,7 @@
                 displayError('[Strings]: ' + response_json.error_message);
                 displayStrings('');
             } else if (response_json.status === 'success'){
-
-                displayStrings(response_json.result.strings);
+                displayStrings(response_json.result.table_html_strings);
             }
         });
 
@@ -100,7 +99,7 @@
             <div class="card-header">
                 <h5>Strings</h5>
             </div>
-            <div class="card-block">
+            <div class="card-block xx-small">
                 <div id="strings">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border text-primary" role="status">

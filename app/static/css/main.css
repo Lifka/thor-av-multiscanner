@@ -1,7 +1,7 @@
 :root {
     --infected-color: #ff1f4b;
     --clean-color: #22b574;
-  }
+}
 
 body {
     background-color: #f2f7fb
@@ -72,4 +72,8 @@ body {
 
 .av_result.infected{
     color: var(--infected-color);;
+}
+
+#strings{
+    font-size: x-small;
 }

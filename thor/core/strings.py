@@ -11,7 +11,7 @@ DEFAULT_SEPARATOR = '[SEPARATOR]'
 
 async def get_strings(file_path, separator=DEFAULT_SEPARATOR):
     strings = await run_strings_command({ '-s': separator, '': file_path, '--all': '' })
-    return strings.split(separator)
+    return strings.split(separator)[:-1]
 
 async def get_strings_json(file_path, separator=DEFAULT_SEPARATOR):
     response = await get_strings(file_path)
