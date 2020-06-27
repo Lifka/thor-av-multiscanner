@@ -1,8 +1,8 @@
 # /usr/bin/python3
 
 # Copyright (C) 2020
-# Created by Javier Izquierdo Vera. <javierizquierdovera.com>.
-# This program is free software; you can redistribute it and/or modify it under the terms of GPLv2
+# Created by Javier Izquierdo Vera <javierizquierdovera.com>.
+# This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
 
 from utils import get_file_by_hash_in_dir, save_file, get_file_hash
 import json, os
@@ -58,21 +58,41 @@ def get_file(hash):
         app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
     return app.config["files_by_hash"][hash]
 
-
 @app.route('/file-analysis/<hash>/detection', methods=["POST"])
 async def file_analysis_result(hash):
-    table_html_scan_results = ''
-    error_message = ''
-    try:
+    async def get_analysis_result_response(file):
         analysis = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
         result = await analysis
         table_html_scan_results = await parse_analysis_results(result)
+        return { "table_html_scan_results": table_html_scan_results }
+    response = await exec(get_analysis_result_response, (get_file(hash),), True)
+    return json.dumps(response)
+
+@app.route('/file-analysis/<hash>/info', methods=["POST"])
+async def file_analysis_info(hash):
+    def get_file_info_response(file):
+        file_name = ''.join(file.split('_')[2:])
+        file_info = json.loads(get_file_info(file))
+        return { 'file_name': file_name, 'file_info': file_info }
+    response = await exec(get_file_info_response, (get_file(hash),))
+    return json.dumps(response)
+
+@app.route('/file-analysis/<hash>/strings', methods=["POST"])
+async def file_analysis_strings(hash):
+    def get_strings_response(file):
+        return {  }
+    response = await exec(get_strings_response, (get_file(hash),))
+    return json.dumps(response)
+
+async def exec(my_function, my_args, coroutine=False):
+    result = error_message = satus = ''
+    try:
+        result = await my_function(*my_args) if coroutine else my_function(*my_args)
         status = 'success'
     except Exception as e:
-        error_message = 'Error receiving data from the scanner. Error: {}'.format(str(e))
+        error_message = 'Error: {}'.format(str(e))
         status = 'error'
-
-    return json.dumps({"status": '{}'.format(status), "table_html_scan_results":'{}'.format(table_html_scan_results), "error_message":'{}'.format(error_message)})
+    return { "status": status, "result": result, "error_message":error_message }
 
 async def parse_analysis_results(results):
     result_html = '<table class="table table-striped"><tbody>'
@@ -86,23 +106,6 @@ async def parse_analysis_results(results):
             result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
     result_html += '</tbody></table>'
     return result_html
-
-@app.route('/file-analysis/<hash>/info', methods=["POST"])
-async def file_analysis_info(hash):
-    html_file_info = ''
-    error_message = ''
-
-    file = get_file(hash)
-    try:
-        name = ''.join(file.split('_')[2:])
-        status = 'success'
-        html_file_info = json.loads(get_file_info_json(file))
-    except Exception as e:
-        error_message = 'File error: {}'.format(str(e))
-        status = 'error'
-        
-    return json.dumps({"status": '{}'.format(status), "html_file_info":'{}'.format(html_file_info), "error_message":'{}'.format(error_message)})
-
 
 if __name__ == '__main__':
     app.run(debug=True)
