@@ -9,7 +9,7 @@ import json, os
 from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file, get_file_info
+from scanner_wrapper import scan_file, get_file_info, get_file_strings
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -53,17 +53,12 @@ async def file_analysis(hash):
     app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], files[0]))
     return await render_template("scan-results.html")
 
-def get_file(hash):
-    if hash not in app.config["files_by_hash"]:
-        app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
-    return app.config["files_by_hash"][hash]
-
 @app.route('/file-analysis/<hash>/detection', methods=["POST"])
 async def file_analysis_result(hash):
     async def get_analysis_result_response(file):
-        analysis = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
-        result = await analysis
-        table_html_scan_results = await parse_analysis_results(result)
+        analysis_coroutine = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
+        analysis_response = await analysis_coroutine
+        table_html_scan_results = await parse_analysis_results(analysis_response)
         return { "table_html_scan_results": table_html_scan_results }
     response = await exec(get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
@@ -79,20 +74,29 @@ async def file_analysis_info(hash):
 
 @app.route('/file-analysis/<hash>/strings', methods=["POST"])
 async def file_analysis_strings(hash):
-    def get_strings_response(file):
-        return {  }
-    response = await exec(get_strings_response, (get_file(hash),))
+    async def get_strings_response(file):
+        #strings_coroutine = get_file_strings(file)
+        strings_coroutine = get_file_strings(file)
+        strings_response = await strings_coroutine
+        strings_response = json.loads(strings_response)
+        #table_html_strings = await parse_strings_results(strings_response)
+        print(strings_response)
+        return strings_response
+    response = await exec(get_strings_response, (get_file(hash),), True)
     return json.dumps(response)
 
 async def exec(my_function, my_args, coroutine=False):
     result = error_message = satus = ''
-    try:
-        result = await my_function(*my_args) if coroutine else my_function(*my_args)
-        status = 'success'
-    except Exception as e:
-        error_message = 'Error: {}'.format(str(e))
-        status = 'error'
-    return { "status": status, "result": result, "error_message":error_message }
+    #try:
+    result, status = await my_function(*my_args) if coroutine else my_function(*my_args), 'success'
+    #except Exception as e:
+    #    error_message, status = '{}'.format(str(e)), 'error'
+    return { "status": status, "result": result, "error_message": error_message }
+
+def get_file(hash):
+    if hash not in app.config["files_by_hash"]:
+        app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
+    return app.config["files_by_hash"][hash]
 
 async def parse_analysis_results(results):
     result_html = '<table class="table table-striped"><tbody>'

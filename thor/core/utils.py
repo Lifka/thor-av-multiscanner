@@ -4,13 +4,7 @@
 # Created by Javier Izquierdo Vera <javierizquierdovera.com>.
 # This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
 
-import ntpath
-import subprocess
-import re
-import subprocess
-import asyncio
-import os
-import json
+import ntpath, subprocess, re, asyncio, os, json
 
 def get_Docker_version():
     return asyncio.run(exec('docker -v'))

@@ -5,7 +5,7 @@
 # This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
 
 import asyncio
-from core.utils import path_leaf, exec, is_a_valid_file
+from core.utils import path_leaf, exec
 from os.path import abspath
 
 async def scan_file_async(file_path, docker_configuration, loop):

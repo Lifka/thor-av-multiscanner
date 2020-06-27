@@ -12,8 +12,18 @@
                 success: callback
             });
         };
+
         displayResults = (selector, results) => { $(selector).html(results); };
-        displayError = (message) => { displayResults('#error', '<div class="alert alert-danger" role="alert">' + message + '</div>') };
+
+        error_messages = []
+        displayError = (message) => {
+            error_messages.push(message)
+            html_messages = error_messages.map((m) => {
+                return '<div class="alert alert-danger" role="alert">' + m + '</div>';
+            }).join('');
+            displayResults('#error', html_messages)
+        };
+
         displayScanResults = (results) => { displayResults('#scan_results', results) };
         displayFileInfo = (results) => { displayResults('#file_info', results) };
         displayStrings = (results) => { displayResults('#strings', results) };
@@ -21,7 +31,7 @@
         getDetection = () => execAjax("detection", (response) => {
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
-                displayError(response_json.error_message);
+                displayError('[ScanResult]: ' + response_json.error_message);
                 displayScanResults('');
             } else if (response_json.status === 'success'){
                 displayScanResults(response_json.result.table_html_scan_results);
@@ -31,7 +41,7 @@
         getFileInfo = () => execAjax("info", (response) =>  {
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
-                displayError(response_json.error_message);
+                displayError('[FileInfo]: ' + response_json.error_message);
                 displayFileInfo('');
             } else if (response_json.status === 'success'){
                 displayFileInfo(JSON.stringify(response_json.result));
@@ -41,10 +51,11 @@
         getStrings = () => execAjax("strings", (response) =>  {
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
-                displayError(response_json.error_message);
+                displayError('[Strings]: ' + response_json.error_message);
                 displayStrings('');
             } else if (response_json.status === 'success'){
-                displayStrings(response_json.result.table_html_strings);
+
+                displayStrings(response_json.result.strings);
             }
         });
 
