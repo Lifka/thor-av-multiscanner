@@ -13,7 +13,7 @@ def get_file_info(path):
     result['size'] = { 'size': size, 'unit': unit }
     result['hashes'] = { 'MD5': '{}'.format(md5(path)) , 'SHA-1': '{}'.format(sha1(path)), 'SHA-256': '{}'.format(sha256(path)) }
     format_type, format_extension, format_mime = get_info_from_magic_number(path)
-    result['format'] = { 'type': format_type, 'extension': format_extension, 'mime': format_mime }
+    result['magic_number'] = { 'type': format_type, 'extension': format_extension, 'mime': format_mime }
     return result
 
 def get_file_info_json(path):

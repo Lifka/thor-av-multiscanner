@@ -58,7 +58,8 @@ async def file_analysis_result(hash):
     async def get_analysis_result_response(file):
         analysis_coroutine = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
         analysis_response = await analysis_coroutine
-        return { "table_html_scan_results": parse_analysis_result(analysis_response) }
+        table_html_scan_results, av_count, infected_count, icon = parse_analysis_result(analysis_response)
+        return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon}
     response = await exec(get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
 
@@ -67,9 +68,10 @@ async def file_analysis_info(hash):
     def get_file_info_response(file):
         file_name = ''.join(file.split('_')[2:])
         file_info = json.loads(get_file_info(file))
-        return { 'file_name': file_name, 'file_info': file_info }
+        table_html_file_info = parse_analysis_info(file_info, file_name)
+        return { 'table_html_file_info': table_html_file_info }
     response = await exec(get_file_info_response, (get_file(hash),))
-    return json.dumps(response)
+    return json.dumps(response,)
 
 @app.route('/file-analysis/<hash>/strings', methods=["POST"])
 async def file_analysis_strings(hash):
@@ -96,18 +98,37 @@ def get_file(hash):
         app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
     return app.config["files_by_hash"][hash]
 
+def parse_analysis_info(file_info, file_name):
+    print(file_info)
+    result_html = '<table class="table table-striped"><tbody>'
+    result_html += '<tr><td>Name</td><td>{}</td>'.format(file_name)
+    result_html += '<tr><td>Size</td><td>{} {}</td>'.format(file_info['size']['size'], file_info['size']['unit'])
+    result_html += '<tr><td>MD5</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['MD5'])
+    result_html += '<tr><td>SHA-1</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['SHA-1'])
+    result_html += '<tr><td>SHA-256</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['SHA-256'])
+    result_html += '<tr><td>Extension</td><td>{}</td>'.format(file_info['magic_number']['extension'][0])
+    result_html += '<tr><td>Mime</td><td>{}</td>'.format(file_info['magic_number']['mime'][0])
+    result_html += '<tr><td>File type</td><td>{}</td>'.format(file_info['magic_number']['type'][0])
+    result_html += '</tbody></table>'
+    return result_html
+
 def parse_analysis_result(results):
     result_html = '<table class="table table-striped"><tbody>'
+    av_count = 0
+    infected_count = 0
     for av_result in results:
         av_result_object = json.loads(av_result)
         av_name = list(av_result_object.keys())[0]
         av_result = av_result_object[av_name]
+        av_count += 1
         if av_result['infected']:
+            infected_count += 1
             result_html += "<tr><td class='av_name'>{}</td><td class='av_result infected'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td>".format(av_name, av_result['result'])
         else:
             result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
     result_html += '</tbody></table>'
-    return result_html
+    icon = "<i class='fas fa-exclamation-circle icon-infected'></i>" if infected_count > 0 else "<i class='far fa-check-circle icon-clean'></i>"
+    return result_html, av_count, infected_count, icon
 
 def parse_file_analysis_strings_result(result):
     result_html = '<table class="table table-striped"><tbody>'

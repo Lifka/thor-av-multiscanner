@@ -24,7 +24,12 @@
             displayResults('#error', html_messages)
         };
 
-        displayScanResults = (results) => { displayResults('#scan_results', results) };
+        displayScanResults = (results, av_count=0, infected_count=0, icon='') => { 
+            displayResults('#scan_results', results); 
+            displayResults('#av_count', av_count);
+            displayResults('#infected_count', infected_count);
+            displayResults('#scan_result_icon', icon);
+        };
         displayFileInfo = (results) => { displayResults('#file_info', results) };
         displayStrings = (results, count) => { 
             displayResults('#strings', results); 
@@ -35,9 +40,14 @@
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
                 displayError('[ScanResult]: ' + response_json.error_message);
-                displayScanResults('', 0);
+                displayScanResults('');
             } else if (response_json.status === 'success'){
-                displayScanResults(response_json.result.table_html_scan_results);
+                displayScanResults(
+                    response_json.result.table_html_scan_results, 
+                    response_json.result.av_count, 
+                    response_json.result.infected_count, 
+                    response_json.result.icon
+                );
             }
         });
 
@@ -47,7 +57,7 @@
                 displayError('[FileInfo]: ' + response_json.error_message);
                 displayFileInfo('');
             } else if (response_json.status === 'success'){
-                displayFileInfo(JSON.stringify(response_json.result));
+                displayFileInfo(response_json.result.table_html_file_info);
             }
         });
 
@@ -86,7 +96,7 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Scan result</h5>
+                <h5>AV Engine Detections (<span id="infected_count">0</span>/<span id="av_count">0</span>) <span id="scan_result_icon"></span></h5>
             </div>
             <div class="card-block">
                 <div id="scan_results">
