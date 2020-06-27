@@ -50,7 +50,7 @@ async def file_analysis(hash):
         print("[file_analysis] No file(s) found for hash -> {}".format(hash))
         return home()
     print("[file_analysis] Get results from -> {}".format(files))
-    app.config["files_by_hash"][hash] = os.path.join(app.config["VAULT"], files[0])
+    app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], files[0]))
     return await render_template("scan-results.html")
 
 def get_file(hash):
@@ -96,7 +96,7 @@ async def file_analysis_info(hash):
     try:
         name = ''.join(file.split('_')[2:])
         status = 'success'
-        html_file_info = json.loads(get_file_info(file))
+        html_file_info = json.loads(get_file_info_json(file))
     except Exception as e:
         error_message = 'File error: {}'.format(str(e))
         status = 'error'

@@ -13,10 +13,10 @@ def get_file_info(path):
     size, unit = get_pretty_size(path)
     result['size'] = { 'size': size, 'unit': unit }
 
-    result['hashes'] = { 'MD5': md5(path), 'SHA-1': sha1(path), 'SHA-256': sha256(hash) }
+    result['hashes'] = { 'MD5': '{}'.format(md5(path)) , 'SHA-1': '{}'.format(sha1(path)), 'SHA-256': '{}'.format(sha256(path)) }
 
     format_type, format_extension, format_mime = get_info_from_magic_number(path)
-    result['hashes'] = { 'type': format_type, 'extension': format_extension, 'mime': format_mime }
+    result['format'] = { 'type': format_type, 'extension': format_extension, 'mime': format_mime }
 
     return result
 
@@ -31,13 +31,13 @@ def get_pretty_size(path):
     MB = 1048576 #1024*1024
     KB = 1024 #1024
     if (size > GB):
-        pretty_size = size/GB
+        pretty_size = round(size/GB, 3)
         unit = 'GB'
     elif (size > MB):
-        pretty_size = size/MB
+        pretty_size = round(size/MB, 3)
         unit = 'MB'
     elif (size > KB):
-        pretty_size = KB
+        pretty_size = round(size/KB, 3)
         unit = 'KB'
     return pretty_size, unit
 
@@ -59,4 +59,5 @@ def get_file_hash(path, hash_function):
 def get_info_from_magic_number(path):
     with open(path, "rb") as file:
         result = fleep.get(file.read(128))
+
     return result.type, result.extension, result.mime

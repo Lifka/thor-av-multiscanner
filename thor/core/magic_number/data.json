@@ -89,6 +89,7 @@
     {"type": "archive", "extension": "dmg", "mime": "application/x-apple-diskimage", "offset": 0, "signature": ["78 01 73 0D 62 62 60"]},
     {"type": "archive", "extension": "iso", "mime": "application/octet-stream", "offset": 0, "signature": ["43 49 53 4F", "43 44 30 30 31"]},
     {"type": "executable", "extension": "com", "mime": "application/x-msdownload", "offset": 0, "signature": ["4D 5A"]},
+    {"type": "executable", "extension": "com", "mime": "application/x-msdownload", "offset": 0, "signature": ["C9"]},
     {"type": "executable", "extension": "exe", "mime": "application/vnd.microsoft.portable-executable", "offset": 0, "signature": ["4D 5A 90 00"]},
     {"type": "executable", "extension": "jar", "mime": "application/java-archive", "offset": 0, "signature": ["50 4B 03 04"]},
     {"type": "font", "extension": "ttf", "mime": "font/ttf", "offset": 0, "signature": ["00 01 00 00"]},
