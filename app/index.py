@@ -50,7 +50,9 @@ async def file_analysis(hash):
         print("[file_analysis] No file(s) found for hash -> {}".format(hash))
         return home()
     print("[file_analysis] Get results from -> {}".format(files))
-    app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], files[0]))
+    if hash not in app.config["files_by_hash"]:
+        app.config["files_by_hash"][hash] = {}
+    app.config["files_by_hash"][hash]['file'] = abspath(os.path.join(app.config["VAULT"], files[0]))
     return await render_template("scan-results.html")
 
 @app.route('/file-analysis/<hash>/detection', methods=["POST"])
@@ -60,7 +62,7 @@ async def file_analysis_result(hash):
         analysis_response = await analysis_coroutine
         table_html_scan_results, av_count, infected_count, icon = parse_analysis_result(analysis_response)
         return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon}
-    response = await exec(get_analysis_result_response, (get_file(hash),), True)
+    response = await exec_with_cache(hash, 'detection', get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
 
 @app.route('/file-analysis/<hash>/info', methods=["POST"])
@@ -70,7 +72,7 @@ async def file_analysis_info(hash):
         file_info = json.loads(get_file_info(file))
         table_html_file_info = parse_analysis_info(file_info, file_name)
         return { 'table_html_file_info': table_html_file_info }
-    response = await exec(get_file_info_response, (get_file(hash),))
+    response = await exec_with_cache(hash, 'info', get_file_info_response, (get_file(hash),))
     return json.dumps(response,)
 
 @app.route('/file-analysis/<hash>/strings', methods=["POST"])
@@ -82,8 +84,13 @@ async def file_analysis_strings(hash):
         count = len(strings)
         table_html_strings = parse_file_analysis_strings_result(strings)
         return { 'table_html_strings':table_html_strings, "count": count }
-    response = await exec(get_strings_response, (get_file(hash),), True)
+    response = await exec_with_cache(hash, 'strings', get_strings_response, (get_file(hash),), True)
     return json.dumps(response)
+
+async def exec_with_cache(hash, operation, my_function, my_args, coroutine=False):
+    response = app.config["files_by_hash"][hash][operation] if operation in app.config["files_by_hash"][hash] else await exec(my_function, my_args, coroutine)
+    app.config["files_by_hash"][hash][operation] = response
+    return app.config["files_by_hash"][hash][operation]
 
 async def exec(my_function, my_args, coroutine=False):
     result = error_message = satus = ''
@@ -95,11 +102,11 @@ async def exec(my_function, my_args, coroutine=False):
 
 def get_file(hash):
     if hash not in app.config["files_by_hash"]:
-        app.config["files_by_hash"][hash] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
-    return app.config["files_by_hash"][hash]
+        app.config["files_by_hash"][hash] = {}
+        app.config["files_by_hash"][hash]['file'] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
+    return app.config["files_by_hash"][hash]['file']
 
 def parse_analysis_info(file_info, file_name):
-    print(file_info)
     result_html = '<table class="table table-striped"><tbody>'
     result_html += '<tr><td>Name</td><td>{}</td>'.format(file_name)
     result_html += '<tr><td>Size</td><td>{} {}</td>'.format(file_info['size']['size'], file_info['size']['unit'])
