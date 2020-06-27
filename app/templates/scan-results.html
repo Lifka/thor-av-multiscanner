@@ -26,13 +26,16 @@
 
         displayScanResults = (results) => { displayResults('#scan_results', results) };
         displayFileInfo = (results) => { displayResults('#file_info', results) };
-        displayStrings = (results) => { displayResults('#strings', results) };
+        displayStrings = (results, count) => { 
+            displayResults('#strings', results); 
+            displayResults('#string_total', '(' + count + ')'); 
+        };
 
         getDetection = () => execAjax("detection", (response) => {
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
                 displayError('[ScanResult]: ' + response_json.error_message);
-                displayScanResults('');
+                displayScanResults('', 0);
             } else if (response_json.status === 'success'){
                 displayScanResults(response_json.result.table_html_scan_results);
             }
@@ -54,7 +57,7 @@
                 displayError('[Strings]: ' + response_json.error_message);
                 displayStrings('');
             } else if (response_json.status === 'success'){
-                displayStrings(response_json.result.table_html_strings);
+                displayStrings(response_json.result.table_html_strings, response_json.result.count);
             }
         });
 
@@ -97,10 +100,10 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Strings</h5>
+                <h5>Strings <span id="string_total"></span></h5>
             </div>
             <div class="card-block xx-small">
-                <div id="strings">
+                <div id="strings" class="table-wrapper-scroll-y strings-scrollbar">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border text-primary" role="status">
                             <span class="sr-only">Scanning...</span>

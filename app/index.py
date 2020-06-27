@@ -76,8 +76,10 @@ async def file_analysis_strings(hash):
     async def get_strings_response(file):
         strings_coroutine = get_file_strings(file)
         strings_response = await strings_coroutine
-        table_html_strings = parse_file_analysis_strings_result(json.loads(strings_response)['strings'])
-        return { 'table_html_strings':table_html_strings }
+        strings = json.loads(strings_response)['strings']
+        count = len(strings)
+        table_html_strings = parse_file_analysis_strings_result(strings)
+        return { 'table_html_strings':table_html_strings, "count": count }
     response = await exec(get_strings_response, (get_file(hash),), True)
     return json.dumps(response)
 
