@@ -87,3 +87,11 @@ body {
 .table-wrapper-scroll-y {
     display: block;
 }
+
+.scan_date_container{
+    padding-bottom: 20px;
+}
+
+#scan_date{
+    padding-right: 15px;
+}

@@ -4,7 +4,14 @@
 
 <script type="text/javascript">
     $(document).ready(function () {
-        execAjax = (uri, callback) => {
+        displayResults = (selector, results) => { $(selector).html(results); };
+        setSpinner = (selector) => {
+            displayResults(selector, 
+                '<div class="d-flex justify-content-center"> <div class="spinner-border text-primary" role="status"> <span class="sr-only">Scanning...</span> </div>  </div>'
+            );
+        }
+        execAjax = (uri, callback, spinner_selector='') => {
+            if (spinner_selector) setSpinner(spinner_selector);
             let url = $(location).attr('href').split("/");
             $.ajax({
                 type: "POST",
@@ -12,44 +19,53 @@
                 success: callback
             });
         };
-
-        displayResults = (selector, results) => { $(selector).html(results); };
-
         error_messages = []
         displayError = (message) => {
-            error_messages.push(message)
-            html_messages = error_messages.map((m) => {
-                return '<div class="alert alert-danger" role="alert">' + m + '</div>';
-            }).join('');
+            if (message) {
+                error_messages.push(message)
+                html_messages = error_messages.map((m) => {
+                    return '<div class="alert alert-danger" role="alert">' + m + '</div>';
+                }).join('');
+            } else
+                html_messages = ''
             displayResults('#error', html_messages)
         };
-
-        displayScanResults = (results, av_count=0, infected_count=0, icon='') => { 
+        
+        displayScanResults = (results, av_count=0, infected_count=0, icon='', scan_date='No date yet') => { 
             displayResults('#scan_results', results); 
             displayResults('#av_count', av_count);
             displayResults('#infected_count', infected_count);
             displayResults('#scan_result_icon', icon);
+            displayResults('#scan_date', scan_date);
         };
         displayFileInfo = (results) => { displayResults('#file_info', results) };
-        displayStrings = (results, count) => { 
+        displayStrings = (results, count=0) => { 
             displayResults('#strings', results); 
             displayResults('#string_total', '(' + count + ')'); 
         };
 
-        getDetection = () => execAjax("detection", (response) => {
-            response_json = jQuery.parseJSON(response)
-            if (response_json.status === 'error'){
-                displayError('[ScanResult]: ' + response_json.error_message);
-                displayScanResults('');
-            } else if (response_json.status === 'success'){
-                displayScanResults(
-                    response_json.result.table_html_scan_results, 
-                    response_json.result.av_count, 
-                    response_json.result.infected_count, 
-                    response_json.result.icon
-                );
-            }
-        });
+        getDetection = () => {
+            $("#rescan-button").addClass("disabled");
+            $("#rescan-button").prop('disabled', true);
+            displayScanResults('');
+            execAjax("detection", (response) => {
+                response_json = jQuery.parseJSON(response)
+                if (response_json.status === 'error'){
+                    displayError('[ScanResult]: ' + response_json.error_message);
+                    displayScanResults('');
+                } else if (response_json.status === 'success'){
+                    displayScanResults(
+                        response_json.result.table_html_scan_results, 
+                        response_json.result.av_count, 
+                        response_json.result.infected_count, 
+                        response_json.result.icon, 
+                        response_json.result.scan_date
+                    );
+                }
+                $("#rescan-button").removeClass("disabled");
+            $("#rescan-button").prop('disabled', false);
+            }, '#file_info');
+        }
 
         getFileInfo = () => execAjax("info", (response) =>  {
             response_json = jQuery.parseJSON(response)
@@ -59,26 +75,51 @@
             } else if (response_json.status === 'success'){
                 displayFileInfo(response_json.result.table_html_file_info);
             }
-        });
+        }, '#scan_results');
 
-        getStrings = () => execAjax("strings", (response) =>  {
+        getStrings = () => { 
+            displayStrings('');
+            execAjax("strings", (response) =>  {
+                response_json = jQuery.parseJSON(response)
+                if (response_json.status === 'error'){
+                    displayError('[Strings]: ' + response_json.error_message);
+                    displayStrings('');
+                } else if (response_json.status === 'success'){
+                    displayStrings(response_json.result.table_html_strings, response_json.result.count);
+                }
+            }, '#strings'); 
+        };
+
+        rescan = () => execAjax("clean-cache", (response) =>  {
+            error_messages = []
+            displayError('')
             response_json = jQuery.parseJSON(response)
-            if (response_json.status === 'error'){
-                displayError('[Strings]: ' + response_json.error_message);
-                displayStrings('');
-            } else if (response_json.status === 'success'){
-                displayStrings(response_json.result.table_html_strings, response_json.result.count);
-            }
+            if (response_json.status === 'error')
+                displayError('[CleanCache]: ' + response_json.error_message);
+            else if (response_json.status === 'success')
+                execAnalysis();
         });
 
-        getDetection();
-        getFileInfo();
-        getStrings();
+        execAnalysis = () => {
+            getDetection();
+            getFileInfo();
+            getStrings();
+        };
+
+        execAnalysis();
     })
 </script>
 
 <div class="row d-flex justify-content-center mt-100">
     <div class="col-md-8">
+        <div class="container scan_date_container">
+            <div class="row">
+                <div class="col text-right">
+                    Last scan: <span id='scan_date'>No date yet</span>
+                    <button type="button" onclick="rescan()" class="btn btn-primary" id="rescan-button"><i class="fas fa-redo"></i></button>
+                </div>
+            </div>
+        </div>
         <div id="error"></div>
         <div class="card">
             <div class="card-header">

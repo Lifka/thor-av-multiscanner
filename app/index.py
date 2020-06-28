@@ -4,7 +4,7 @@
 # Created by Javier Izquierdo Vera <javierizquierdovera.com>.
 # This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
 
-from utils import get_file_by_hash_in_dir, save_file, get_file_hash
+from utils import get_file_by_hash_in_dir, save_file, get_file_hash, get_current_date
 import json, os
 from os.path import abspath
 
@@ -61,7 +61,10 @@ async def file_analysis_result(hash):
         analysis_coroutine = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
         analysis_response = await analysis_coroutine
         table_html_scan_results, av_count, infected_count, icon = parse_analysis_result(analysis_response)
-        return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon}
+        scan_date = get_current_date()
+        print(scan_date)
+        scan_date_string = "{} {}".format(scan_date[0], scan_date[1].replace('-', ':'))
+        return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon, "scan_date": scan_date_string}
     response = await exec_with_cache(hash, 'detection', get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
 
@@ -87,6 +90,14 @@ async def file_analysis_strings(hash):
     response = await exec_with_cache(hash, 'strings', get_strings_response, (get_file(hash),), True)
     return json.dumps(response)
 
+@app.route('/file-analysis/<hash>/clean-cache', methods=["POST"])
+async def file_analysis_clean_cache(hash):
+    def clean_cache(hash):
+        app.config["files_by_hash"].pop(hash, None)
+        return {}
+    response = await exec(clean_cache, (hash,))
+    return json.dumps(response)
+
 async def exec_with_cache(hash, operation, my_function, my_args, coroutine=False):
     response = app.config["files_by_hash"][hash][operation] if operation in app.config["files_by_hash"][hash] else await exec(my_function, my_args, coroutine)
     app.config["files_by_hash"][hash][operation] = response
@@ -103,7 +114,7 @@ async def exec(my_function, my_args, coroutine=False):
 def get_file(hash):
     if hash not in app.config["files_by_hash"]:
         app.config["files_by_hash"][hash] = {}
-        app.config["files_by_hash"][hash]['file'] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])))
+        app.config["files_by_hash"][hash]['file'] = abspath(os.path.join(app.config["VAULT"], get_file_by_hash_in_dir(hash, app.config["VAULT"])[0]))
     return app.config["files_by_hash"][hash]['file']
 
 def parse_analysis_info(file_info, file_name):

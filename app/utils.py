@@ -20,8 +20,11 @@ def get_file_by_hash_in_dir(hash, path):
     return [f for f in os.listdir(path) if get_file_hash(os.path.join(path, f)) == hash]
 
 def save_file(file, vault):
-    timestamp = datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')
-    filename = "{}__{}".format(timestamp, secure_filename(file.filename))
+    timestamp = get_current_date()
+    filename = "{}_{}__{}".format(timestamp[0], timestamp[1], secure_filename(file.filename))
     path = os.path.join(vault, filename)
     file.save(path)
     return path
+
+def get_current_date():
+    return datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S').split('_')
