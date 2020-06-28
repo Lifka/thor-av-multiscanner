@@ -114,7 +114,7 @@ async def file_analysis_pe_info(hash):
         table_html_sections = parse_file_analysis_sections_result(sections)
         table_html_pe_info = parse_file_analysis_pe_info_result(entry_point, target_machine, compilation_timestamp)
         return { 'table_html_sections':table_html_sections, "section_count": section_count, "table_html_pe_info": table_html_pe_info}
-    response = await exec_with_cache(hash, 'pe-info ', get_pe_info_response, (get_file(hash),))
+    response = await exec_with_cache(hash, 'pe-info', get_pe_info_response, (get_file(hash),))
     return json.dumps(response)
 
 @app.route('/file-analysis/<hash>/clean-cache', methods=["POST"])
@@ -151,9 +151,12 @@ def parse_analysis_info(file_info, file_name):
     result_html += '<tr><td>MD5</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['MD5'])
     result_html += '<tr><td>SHA-1</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['SHA-1'])
     result_html += '<tr><td>SHA-256</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['SHA-256'])
-    result_html += '<tr><td>Extension</td><td>{}</td></tr>'.format(file_info['magic_number']['extension'][0])
-    result_html += '<tr><td>Mime</td><td>{}</td></tr>'.format(file_info['magic_number']['mime'][0])
-    result_html += '<tr><td>File type</td><td>{}</td></tr>'.format(file_info['magic_number']['type'][0])
+    if len(file_info['magic_number']['extension']) > 0:
+        result_html += '<tr><td>Extension</td><td>{}</td></tr>'.format(file_info['magic_number']['extension'][0])
+    if len(file_info['magic_number']['mime']) > 0:
+        result_html += '<tr><td>Mime</td><td>{}</td></tr>'.format(file_info['magic_number']['mime'][0])
+    if len(file_info['magic_number']['type']) > 0:
+        result_html += '<tr><td>File type</td><td>{}</td></tr>'.format(file_info['magic_number']['type'][0])
     result_html += '</tbody></table>'
     return result_html
 
@@ -182,6 +185,8 @@ def parse_file_analysis_imports_result(results):
     return parse_standard_table(results, 'import')
 
 def parse_file_analysis_pe_info_result(entry_point, target_machine, compilation_timestamp):
+    if not entry_point and not target_machine and not compilation_timestamp:
+        return 'This file does not comply with the Portable Executable format.'
     result_html = '<table class="table table-striped"><tbody>'
     if target_machine: 
         result_html += '<tr><td>Target Machine</td><td>{}</td></tr>'.format(target_machine)

@@ -3,6 +3,7 @@
 # Copyright (C) 2020
 # Created by Javier Izquierdo Vera <javierizquierdovera.com>.
 # This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
+# Based on https://github.com/byeongal/PEAnalyser
 
 import json, pefile, datetime, ordlookup
 
@@ -65,5 +66,5 @@ def get_pe_info(file_path):
     try:
         pe = pefile.PE(file_path)
     except Exception as e:
-        return {} # DOS Header magic not found.
+        return {}, None, None, None, {} # DOS Header magic not found.
     return get_sections(file_path, pe), get_entry_point(pe), get_target_machine(pe), get_compilation_timestamp(pe), get_imports_info(pe)
