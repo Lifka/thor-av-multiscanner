@@ -22,7 +22,7 @@
     {"type": "raw-image", "extension": "cr2", "mime": "application/octet-stream", "offset": 0, "signature": ["49 49 2A 00"]},
     {"type": "raw-image", "extension": "orf", "mime": "application/octet-stream", "offset": 0, "signature": ["49 49 52 4F", "49 49 52 53"]},
     {"type": "raw-image", "extension": "dng", "mime": "application/octet-stream", "offset": 0, "signature": ["4D 4D 00 2A", "49 49 2A 00"]},
-    {"type": "vector-image", "extension": "ai", "mime": "application/postscript", "offset": 0, "signature": ["25 50 44 46"]},
+    {"type": "document", "extension": "pdf", "mime": "application/pdf", "offset": 0, "signature": ["25 50 44 46"]},
     {"type": "vector-image", "extension": "eps", "mime": "application/postscript", "offset": 0, "signature": ["C5 D0 D3 C6", "25 21 50 53 2D 41 64 6F"]},
     {"type": "3d-image", "extension": "obj", "mime": "text/plain", "offset": 2, "signature": ["4D 61 78 32 4F 62 6A", "42 6C 65 6E 64 65 72"]},
     {"type": "3d-image", "extension": "mtl", "mime": "text/plain", "offset": 2, "signature": ["4D 61 78 32 4D 74 6C", "42 6C 65 6E 64 65 72 20 4D 54 4C 20 46 69 6C 65"]},

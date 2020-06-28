@@ -27,7 +27,11 @@ def get_section_data(section):
     return section_data
 
 def get_sections(file_path):
-    return { get_section_name(section.Name):get_section_data(section) for section in pefile.PE(file_path).sections }
+    try:
+        pe_sections = pefile.PE(file_path).sections
+    except Exception as e:
+        return {} # DOS Header magic not found.
+    return { get_section_name(section.Name):get_section_data(section) for section in pe_sections }
 
 def get_sections_json(file_path):
     return json.dumps({ "sections": get_sections(file_path) })

@@ -181,6 +181,8 @@ def parse_file_analysis_imports_result(results):
     return parse_standard_table(results, 'import')
 
 def parse_file_analysis_sections_result(results):
+    if len(results) == 0:
+        return ''
     header = [ 'Name', 'Virtual Address', 'Virtual Size', 'Raw Size', 'Entropy', 'MD5', 'SHA-1', 'SHA-256' ]
     result_html = '<table class="table table-striped">'
     result_html += '<thead><tr>'
@@ -189,8 +191,6 @@ def parse_file_analysis_sections_result(results):
     result_html += '</tr></thead>'
     result_html += '<tbody>'
     for section, section_data in results.items():
-        print(section)
-        print(section_data)
         result_html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><small>{}</small></td><td><small>{}</small></td><td><small>{}</small></td></tr>".format(section, section_data['virtual_address'], section_data['virtual_size'], section_data['raw_size'], section_data['entropy'], section_data['hashes']['MD5'], section_data['hashes']['SHA-1'], section_data['hashes']['SHA-256'])
     result_html += '</tbody>'
     result_html += '</table>'
