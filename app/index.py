@@ -9,7 +9,7 @@ import json, os
 from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_file_imports, get_file_sections
+from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_file_imports, get_pe_info
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -103,17 +103,18 @@ async def file_analysis_imports(hash):
     response = await exec_with_cache(hash, 'imports', get_imports_response, (get_file(hash),), True)
     return json.dumps(response)
 
-@app.route('/file-analysis/<hash>/sections', methods=["POST"])
-async def file_analysis_sections(hash):
-    def get_sections_response(file):
-        sections_response = get_file_sections(file)
-        sections = json.loads(sections_response)['sections']
-        count = len(sections)
+@app.route('/file-analysis/<hash>/pe-info', methods=["POST"])
+async def file_analysis_pe_info(hash):
+    def get_pe_info_response(file):
+        response = get_pe_info(file)
+        pe_info = json.loads(response)
+        sections = pe_info['sections']
+        entry_point, target_machine, compilation_timestamp = pe_info['entry_point'], pe_info['target_machine'], pe_info['compilation_timestamp'],
+        section_count = len(sections)
         table_html_sections = parse_file_analysis_sections_result(sections)
-        return { 'table_html_sections':table_html_sections, "count": count }
-    #response = await exec_with_cache(hash, 'sections', get_sections_response, (get_file(hash),))
-    response = await exec(get_sections_response, (get_file(hash),))
-    print(response)
+        table_html_pe_info = parse_file_analysis_pe_info_result(entry_point, target_machine, compilation_timestamp)
+        return { 'table_html_sections':table_html_sections, "section_count": section_count, "table_html_pe_info": table_html_pe_info}
+    response = await exec_with_cache(hash, 'pe-info ', get_pe_info_response, (get_file(hash),))
     return json.dumps(response)
 
 @app.route('/file-analysis/<hash>/clean-cache', methods=["POST"])
@@ -179,6 +180,15 @@ def parse_file_analysis_strings_result(results):
 
 def parse_file_analysis_imports_result(results):
     return parse_standard_table(results, 'import')
+
+def parse_file_analysis_pe_info_result(entry_point, target_machine, compilation_timestamp):
+    result_html = '<table class="table table-striped"><tbody>'
+    if target_machine: 
+        result_html += '<tr><td>Target Machine</td><td>{}</td></tr>'.format(target_machine)
+    result_html += '<tr><td>Compilation Timestamp</td><td>{}</td></tr>'.format(compilation_timestamp)
+    result_html += '<tr><td>Entry Point</td><td>{}</td></tr>'.format(entry_point)
+    result_html += '</tbody></table>'
+    return result_html
 
 def parse_file_analysis_sections_result(results):
     if len(results) == 0:

@@ -6,6 +6,7 @@
 
 import json
 import pefile
+import datetime
 
 def get_section_name(section_raw_name):
     try:
@@ -26,13 +27,29 @@ def get_section_data(section):
     section_data['entropy'] = round(section.get_entropy(), 3)
     return section_data
 
-def get_sections(file_path):
+def get_entry_point(pe):
+    return pe.OPTIONAL_HEADER.AddressOfEntryPoint
+
+MACHINE_CODES = {
+    332: 'Intel 386 or later processors and compatible processors'
+}
+
+def get_target_machine(pe):
+    return '' if not pe.FILE_HEADER.Machine in MACHINE_CODES else MACHINE_CODES[pe.FILE_HEADER.Machine]
+
+def get_compilation_timestamp(pe):
+    return datetime.datetime.fromtimestamp(pe.FILE_HEADER.TimeDateStamp).strftime('%Y-%m-%d %H:%M:%S')
+
+def get_sections(file_path, pe):
+    return { get_section_name(section.Name):get_section_data(section) for section in pe.sections }
+
+def get_pe_info_json(file_path):
+    sections, entry_point, target_machine, compilation_timestamp = get_pe_info(file_path)
+    return json.dumps({ "sections": sections, "entry_point": entry_point, "target_machine": target_machine, "compilation_timestamp": compilation_timestamp})
+ 
+def get_pe_info(file_path):
     try:
-        pe_sections = pefile.PE(file_path).sections
+        pe = pefile.PE(file_path)
     except Exception as e:
         return {} # DOS Header magic not found.
-    return { get_section_name(section.Name):get_section_data(section) for section in pe_sections }
-
-def get_sections_json(file_path):
-    return json.dumps({ "sections": get_sections(file_path) })
- 
+    return get_sections(file_path, pe), get_entry_point(pe), get_target_machine(pe), get_compilation_timestamp(pe)

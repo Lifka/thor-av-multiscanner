@@ -47,9 +47,10 @@
             displayResults('#imports', results); 
             displayResults('#imports_total', '(' + count + ')'); 
         };
-        displaySections = (results, count=0) => { 
-            displayResults('#sections', results); 
-            displayResults('#sections_total', '(' + count + ')'); 
+        displayPE = (sections, pe_info, section_count=0) => { 
+            displayResults('#sections', sections); 
+            displayResults('#sections_total', '(' + section_count + ')'); 
+            displayResults('#pe_info', pe_info); 
         };
 
         getDetection = () => {
@@ -111,15 +112,15 @@
             }, '#strings'); 
         };
     
-        getSections = () => { 
-            displaySections('');
-            execAjax("sections", (response) =>  {
+        getPE = () => { 
+            displayPE('');
+            execAjax("pe-info", (response) =>  {
                 response_json = jQuery.parseJSON(response)
                 if (response_json.status === 'error'){
-                    displayError('[Sections]: ' + response_json.error_message);
-                    displaySections('');
+                    displayError('[pe-info]: ' + response_json.error_message);
+                    displayPE('');
                 } else if (response_json.status === 'success'){
-                    displaySections(response_json.result.table_html_sections, response_json.result.count);
+                    displayPE(response_json.result.table_html_sections, response_json.result.table_html_pe_info, response_json.result.section_count);
                 }
             }, '#strings'); 
         };
@@ -139,7 +140,7 @@
             getFileInfo();
             getStrings();
             getImports();
-            getSections();
+            getPE();
         };
 
         execAnalysis();
@@ -188,9 +189,18 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Sections <span id="sections_total"></span></h5>
+                <h5>Portable Executable Info (PE)</h5>
             </div>
             <div class="card-block">
+                <div id="pe_info">
+                    <div class="d-flex justify-content-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">Scanning...</span>
+                        </div>
+                    </div>
+                </div>
+                <br>
+                <h6>Sections <span id="sections_total"></span></h6>
                 <div id="sections">
                     <div class="d-flex justify-content-center">
                         <div class="spinner-border text-primary" role="status">
