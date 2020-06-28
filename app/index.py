@@ -9,7 +9,7 @@ import json, os
 from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file, get_file_info, get_file_strings
+from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_file_imports, get_file_sections
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -61,9 +61,10 @@ async def file_analysis_result(hash):
         analysis_coroutine = scan_file(get_file(hash), app.config["DOCKER_CONFIG_PATH"])
         analysis_response = await analysis_coroutine
         table_html_scan_results, av_count, infected_count, icon = parse_analysis_result(analysis_response)
-        scan_date = get_current_date()
-        print(scan_date)
-        scan_date_string = "{} {}".format(scan_date[0], scan_date[1].replace('-', ':'))
+        if 'scan_date' not in app.config["files_by_hash"][hash]:
+            scan_date = get_current_date()
+            app.config["files_by_hash"][hash]['scan_date'] = "{} {}".format(scan_date[0], scan_date[1].replace('-', ':')) 
+        scan_date_string = app.config["files_by_hash"][hash]['scan_date'] 
         return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon, "scan_date": scan_date_string}
     response = await exec_with_cache(hash, 'detection', get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
@@ -88,6 +89,31 @@ async def file_analysis_strings(hash):
         table_html_strings = parse_file_analysis_strings_result(strings)
         return { 'table_html_strings':table_html_strings, "count": count }
     response = await exec_with_cache(hash, 'strings', get_strings_response, (get_file(hash),), True)
+    return json.dumps(response)
+
+@app.route('/file-analysis/<hash>/imports', methods=["POST"])
+async def file_analysis_imports(hash):
+    async def get_imports_response(file):
+        imports_coroutine = get_file_imports(file)
+        imports_response = await imports_coroutine
+        imports = json.loads(imports_response)['imports']
+        count = len(imports)
+        table_html_imports = parse_file_analysis_imports_result(imports)
+        return { 'table_html_imports':table_html_imports, "count": count }
+    response = await exec_with_cache(hash, 'imports', get_imports_response, (get_file(hash),), True)
+    return json.dumps(response)
+
+@app.route('/file-analysis/<hash>/sections', methods=["POST"])
+async def file_analysis_sections(hash):
+    def get_sections_response(file):
+        sections_response = get_file_sections(file)
+        sections = json.loads(sections_response)['sections']
+        count = len(sections)
+        table_html_sections = parse_file_analysis_sections_result(sections)
+        return { 'table_html_sections':table_html_sections, "count": count }
+    #response = await exec_with_cache(hash, 'sections', get_sections_response, (get_file(hash),))
+    response = await exec(get_sections_response, (get_file(hash),))
+    print(response)
     return json.dumps(response)
 
 @app.route('/file-analysis/<hash>/clean-cache', methods=["POST"])
@@ -119,14 +145,14 @@ def get_file(hash):
 
 def parse_analysis_info(file_info, file_name):
     result_html = '<table class="table table-striped"><tbody>'
-    result_html += '<tr><td>Name</td><td>{}</td>'.format(file_name)
-    result_html += '<tr><td>Size</td><td>{} {}</td>'.format(file_info['size']['size'], file_info['size']['unit'])
-    result_html += '<tr><td>MD5</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['MD5'])
-    result_html += '<tr><td>SHA-1</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['SHA-1'])
-    result_html += '<tr><td>SHA-256</td><td><small><i>{}</i></small></td>'.format(file_info['hashes']['SHA-256'])
-    result_html += '<tr><td>Extension</td><td>{}</td>'.format(file_info['magic_number']['extension'][0])
-    result_html += '<tr><td>Mime</td><td>{}</td>'.format(file_info['magic_number']['mime'][0])
-    result_html += '<tr><td>File type</td><td>{}</td>'.format(file_info['magic_number']['type'][0])
+    result_html += '<tr><td>Name</td><td>{}</td></tr>'.format(file_name)
+    result_html += '<tr><td>Size</td><td>{} {}</td></tr>'.format(file_info['size']['size'], file_info['size']['unit'])
+    result_html += '<tr><td>MD5</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['MD5'])
+    result_html += '<tr><td>SHA-1</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['SHA-1'])
+    result_html += '<tr><td>SHA-256</td><td><small><i>{}</i></small></td></tr>'.format(file_info['hashes']['SHA-256'])
+    result_html += '<tr><td>Extension</td><td>{}</td></tr>'.format(file_info['magic_number']['extension'][0])
+    result_html += '<tr><td>Mime</td><td>{}</td></tr>'.format(file_info['magic_number']['mime'][0])
+    result_html += '<tr><td>File type</td><td>{}</td></tr>'.format(file_info['magic_number']['type'][0])
     result_html += '</tbody></table>'
     return result_html
 
@@ -141,18 +167,40 @@ def parse_analysis_result(results):
         av_count += 1
         if av_result['infected']:
             infected_count += 1
-            result_html += "<tr><td class='av_name'>{}</td><td class='av_result infected'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td>".format(av_name, av_result['result'])
+            result_html += "<tr><td class='av_name'>{}</td><td class='av_result infected'><i class='fas fa-exclamation-circle icon-infected'></i>{}</td></tr>".format(av_name, av_result['result'])
         else:
-            result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected".format(av_name)
+            result_html += "<tr><td class='av_name'>{}</td><td class='av_result'><i class='far fa-check-circle icon-clean'></i>Undetected</td></tr>".format(av_name)
     result_html += '</tbody></table>'
     icon = "<i class='fas fa-exclamation-circle icon-infected'></i>" if infected_count > 0 else "<i class='far fa-check-circle icon-clean'></i>"
     return result_html, av_count, infected_count, icon
 
-def parse_file_analysis_strings_result(result):
+def parse_file_analysis_strings_result(results):
+    return parse_standard_table(results, 'string')
+
+def parse_file_analysis_imports_result(results):
+    return parse_standard_table(results, 'import')
+
+def parse_file_analysis_sections_result(results):
+    header = [ 'Name', 'Virtual Address', 'Virtual Size', 'Raw Size', 'Entropy', 'MD5', 'SHA-1', 'SHA-256' ]
+    result_html = '<table class="table table-striped">'
+    result_html += '<thead><tr>'
+    for column in header:
+        result_html += '<th scope="col">{}</th>'.format(column)
+    result_html += '</tr></thead>'
+    result_html += '<tbody>'
+    for section, section_data in results.items():
+        print(section)
+        print(section_data)
+        result_html += "<tr><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td>{}</td><td><small>{}</small></td><td><small>{}</small></td><td><small>{}</small></td></tr>".format(section, section_data['virtual_address'], section_data['virtual_size'], section_data['raw_size'], section_data['entropy'], section_data['hashes']['MD5'], section_data['hashes']['SHA-1'], section_data['hashes']['SHA-256'])
+    result_html += '</tbody>'
+    result_html += '</table>'
+    return result_html
+
+def parse_standard_table(results, item_class):
     result_html = '<table class="table table-striped"><tbody>'
     count = 1
-    for string in result:
-        result_html += "<tr><th scope='row'>{}</th><td class='string'>{}</td>".format(count, string)
+    for item in results:
+        result_html += "<tr><th scope='row'>{}</th><td class='{}'>{}</td></tr>".format(count, item_class, item)
         count += 1
     result_html += '</tbody></table>'
     return result_html

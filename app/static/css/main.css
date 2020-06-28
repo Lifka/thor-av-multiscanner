@@ -75,7 +75,7 @@ body {
 }
 
 #strings{
-    font-size: x-small;
+    font-size: small;
 }
 
 .strings-scrollbar {
@@ -94,4 +94,9 @@ body {
 
 #scan_date{
     padding-right: 15px;
+}
+
+#sections{
+    font-size: small;
+    overflow-x: auto;
 }
