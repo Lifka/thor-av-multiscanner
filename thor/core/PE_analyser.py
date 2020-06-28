@@ -28,7 +28,8 @@ def get_entry_point(pe):
     return pe.OPTIONAL_HEADER.AddressOfEntryPoint
 
 MACHINE_CODES = {
-    332: 'Intel 386 or later processors and compatible processors'
+    332: 'Intel 386 or later processors and compatible processors',
+    34404: 'x64'
 }
 
 def get_target_machine(pe):
