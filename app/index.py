@@ -164,10 +164,7 @@ def parse_analysis_result(results):
     result_html = '<table class="table table-striped"><tbody>'
     av_count = 0
     infected_count = 0
-    for av_result in results:
-        av_result_object = json.loads(av_result)
-        av_name = list(av_result_object.keys())[0]
-        av_result = av_result_object[av_name]
+    for av_name, av_result in results.items():
         av_count += 1
         if av_result['infected']:
             infected_count += 1
