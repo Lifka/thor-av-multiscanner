@@ -27,8 +27,8 @@
                     return '<div class="alert alert-danger" role="alert">' + m + '</div>';
                 }).join('');
             } else
-                html_messages = ''
-            displayResults('#error', html_messages)
+                html_messages = '';
+            displayResults('#error', html_messages);
         };
         
         displayScanResults = (results, av_count=0, infected_count=0, icon='', scan_date='No date yet') => { 

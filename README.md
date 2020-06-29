@@ -184,8 +184,19 @@ $ cd app; python3 index.py
 
 It is possible to access from browsing using the URL: `http://127.0.0.1:5000/`.
 
+### Screenshots
 
+![Choose File](screenshots/screenshot1.png)
 
+![File Info](screenshots/screenshot2.png)
+
+![AV Engine Detections](screenshots/screenshot6.png)
+
+![Portable Executable Info (PE)](screenshots/screenshot3.png)
+
+![Imports](screenshots/screenshot4.png)
+
+![Strings](screenshots/screenshot5.png)
 
 ## Configuration
 This application uses a file in JSON format where the Docker commands that will be used for operations with each of the antivirus are indicated. Each object in the list represents an antivirus configured in a Docker container.
@@ -201,20 +212,6 @@ This application uses a file in JSON format where the Docker commands that will 
 The commands are parameterized, being necessary to indicate the following tokens:
 * File_path: This token will be replaced by the path of the file to analyze.
 * File_name: This token will be replaced by the name of the file to analyze.
-
-### Screenshots
-
-![Choose File](screenshots/screenshot1.png)
-
-![File Info](screenshots/screenshot2.png)
-
-![AV Engine Detections](screenshots/screenshot6.png)
-
-![Portable Executable Info (PE)](screenshots/screenshot3.png)
-
-![Imports](screenshots/screenshot4.png)
-
-![Strings](screenshots/screenshot5.png)
 
 ## AntiVirus
 

@@ -5,8 +5,23 @@
         "update_command": "malice/avg update"
     },
     {
-        "name":"AVG AntiVirus 2",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/avg {File_name}",
-        "update_command": "malice/avg update"
+        "name":"ClamAV",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/clamav {File_name}",
+        "update_command": "malice/comodo update"
+    },
+    {
+        "name":"Comodo Internet Security",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/comodo {File_name}",
+        "update_command": "malice/comodo update"
+    },
+    {
+        "name":"F-PROT Antivirus",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/fprot {File_name}",
+        "update_command": "malice/fprot update"
+    },
+    {
+        "name":"Sophos",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/sophos {File_name}",
+        "update_command": "malice/fprot update"
     }
-]
+] 

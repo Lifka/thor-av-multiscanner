@@ -22,7 +22,7 @@ async def scan_file_async(file_path, docker_configuration, loop):
 def scan_file_parse_results(results):
     responses = {}
     for av_name, result in results.items():
-        if len(result) > 0:
+        if len(result) > 0 and result[0]:
             responses[av_name] = json.loads(result[0])
             responses[av_name] = responses[av_name][list(responses[av_name].keys())[0]]
     return responses
