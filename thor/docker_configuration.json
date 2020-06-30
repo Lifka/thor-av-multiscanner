@@ -1,27 +1,53 @@
 [
     {
         "name":"AVG AntiVirus",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/avg {File_name}",
-        "update_command": "malice/avg update"
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}",
+        "update_command": "{Image} update",
+        "image": "malice/avg",
+        "pull_command": "docker pull {Image}"
+    },
+    {
+        "name":"Avira",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}",
+        "update_command": "{Image} update",
+        "license": "licenses/avira/hbedv.key",
+        "image": "malice/avira",
+        "pull_command": "docker pull {Image}"
     },
     {
         "name":"ClamAV",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/clamav {File_name}",
-        "update_command": "malice/comodo update"
+        "image": "malice/clamav"
     },
     {
         "name":"Comodo Internet Security",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/comodo {File_name}",
-        "update_command": "malice/comodo update"
+        "image": "malice/comodo"
+    },
+    {
+        "name":"eScan Antivirus",
+        "image": "malice/escan"
+    },
+    {
+        "name":"Dr. Web",
+        "image": "malice/drweb"
     },
     {
         "name":"F-PROT Antivirus",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/fprot {File_name}",
-        "update_command": "malice/fprot update"
+        "image": "malice/fprot"
+    },
+    {
+        "name":"McAfee",
+        "image": "malice/mcafee"
     },
     {
         "name":"Sophos",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/sophos {File_name}",
-        "update_command": "malice/fprot update"
+        "image": "malice/sophos"
+    },
+    {
+        "name":"Windows Defender",
+        "image": "malice/windows-defender"
+    },
+    {
+        "name":"ZONER AntiVirus",
+        "image": "malice/zoner"
     }
-] 
+]

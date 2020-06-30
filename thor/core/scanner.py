@@ -9,12 +9,18 @@ from core.utils import path_leaf, exec
 from os.path import abspath
 import json
 
+DEFAULT_UPDATE_COMMAND = "{Image} update"
+DEFAULT_SCAN_COMMAND = "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}"
+DEFAULT_PULL_COMMAND = "docker pull {Image}"
+
 async def scan_file_async(file_path, docker_configuration, loop):
     absolute_file_path = abspath(file_path)
     file_name = path_leaf(file_path)
     tasks = responses = {}
     for antivirus in docker_configuration:
-        tasks[antivirus['name']] = loop.create_task(run_docker_command(antivirus['scan_command'].format(File_path=absolute_file_path, File_name=file_name)))
+        if 'scan_command' not in antivirus:
+            antivirus['scan_command'] = DEFAULT_SCAN_COMMAND
+        tasks[antivirus['name']] = loop.create_task(run_docker_command(antivirus['scan_command'].format(File_path=absolute_file_path, File_name=file_name, Image=antivirus['image'])))
     for av_name, task in tasks.items():
         responses[av_name] = await asyncio.gather(task)
     return responses
@@ -36,7 +42,17 @@ def list_available_antivirus(docker_configuration):
 async def update_antivirus_async(docker_configuration, loop):
     tasks = []
     for antivirus in docker_configuration:
-        tasks.append(loop.create_task(run_docker_command(antivirus['update_command'])))
+        if 'update_command' not in antivirus:
+            antivirus['update_command'] = DEFAULT_UPDATE_COMMAND
+        tasks.append(loop.create_task(run_docker_command(antivirus['update_command'].format(Image=antivirus['image']))))
+    return await asyncio.gather(*tasks)
+
+async def pull_dockers_async(docker_configuration, loop):
+    tasks = []
+    for antivirus in docker_configuration:
+        if 'pull_command' not in antivirus:
+            antivirus['pull_command'] = DEFAULT_PULL_COMMAND
+        tasks.append(loop.create_task(run_docker_command(antivirus['pull_command'].format(Image=antivirus['image']))))
     return await asyncio.gather(*tasks)
 
 async def run_docker_command(command):

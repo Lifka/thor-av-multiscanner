@@ -14,12 +14,12 @@ loop = asyncio.get_event_loop()
 def print_file_info(file, json=False):
     file_info_dict = file_info.get_file_info(file)
     sections, entry_point, target_machine, compilation_timestamp, imports_from_pe = PE_analyser.get_pe_info(file)
-    import_list = loop.run_until_complete(imports.get_imports(file))
+    imported_dll_list = loop.run_until_complete(imports.get_imported_dlls(file))
     if json:
         response = {}
         response['file_info'] = file_info_dict
         response['pe_info'] = { 'sections': sections , 'entry_point': entry_point , 'target_machine': target_machine, 'compilation_timestamp': compilation_timestamp }
-        response['imports'] = import_list
+        response['imported_dlls'] = imported_dll_list
         print(response)
     else:
         print_info(file_info_dict)
@@ -79,9 +79,9 @@ def print_pe_info(sections, entry_point, target_machine, compilation_timestamp):
         print(' {}:\n\tVirtual Address: {}\n\tVirtual Size: {}\n\tRaw Size: {}\n\tCharacteristics: {}\n\tEntropy: {}\n\tMD5: {}\n\tSHA-1: {}\n\tSHA-256: {}'.format(name, section_info['virtual_address'], section_info['virtual_size'], section_info['raw_size'], section_info['characteristics'], section_info['entropy'], section_info['hashes']['MD5'], section_info['hashes']['SHA-1'], section_info['hashes']['SHA-256']))
     print('\n')
     
-def print_imports(import_list):
-    print_header('Imports')
-    for import_value in import_list:
+def print_imports(imported_dlls):
+    print_header('Imported DLLs')
+    for import_value in imported_dlls:
         print(' - {}'.format(import_value))
 
 def print_detections(detections):
@@ -122,7 +122,7 @@ if __name__ == '__main__':
     exclusive.add_argument('-s', '--scan-file', const='scan_file', type=str, dest='file', nargs='?', help='Scan a specific file')
     exclusive.add_argument('-l', '--list-avs', action='store_const', const='list_avs', help='List of available antivirus engines')
     exclusive.add_argument('-u', '--update-avs', action='store_const', const='update_avs', help='Update antivirus databases')
-    exclusive.add_argument('-i', '--file-info', const='file_info', type=str, dest='fileinfo', nargs='?', help='Retrieve file information (File info, Portable Executable Info, Imports)')
+    exclusive.add_argument('-i', '--file-info', const='file_info', type=str, dest='fileinfo', nargs='?', help='Retrieve file information (File info, Portable Executable Info, Imported DLLs)')
     args = parser.parse_args()
 
     logging.basicConfig(level=logging.DEBUG if args.debug else logging.ERROR, format='%(levelname)s: %(message)s')

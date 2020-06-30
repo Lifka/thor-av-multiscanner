@@ -18,8 +18,8 @@ def get_file_info(file_path):
 async def get_file_strings(file_path, separator='[SEPARATOR]'):
     return await strings.get_strings_json(file_path, separator)
 
-async def get_file_imports(file_path):
-    return await imports.get_imports_json(file_path)
+async def get_imported_dlls(file_path):
+    return await imports.get_imported_dlls_json(file_path)
 
 def get_pe_info(file_path):
     return PE_analyser.get_pe_info_json(file_path)

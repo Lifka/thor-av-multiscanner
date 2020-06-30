@@ -9,7 +9,7 @@ import json, os
 from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_file_imports, get_pe_info
+from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_imported_dlls, get_pe_info
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -94,13 +94,13 @@ async def file_analysis_strings(hash):
 @app.route('/file-analysis/<hash>/imports', methods=["POST"])
 async def file_analysis_imports(hash):
     async def get_imports_response(file):
-        imports_coroutine = get_file_imports(file)
+        imports_coroutine = get_imported_dlls(file)
         imports_response = await imports_coroutine
-        imports = json.loads(imports_response)['imports']
+        imports = json.loads(imports_response)['imported_dlls']
         count = len(imports)
         table_html_imports = parse_file_analysis_imports_result(imports)
         return { 'table_html_imports':table_html_imports, "count": count }
-    response = await exec_with_cache(hash, 'imports', get_imports_response, (get_file(hash),), True)
+    response = await exec_with_cache(hash, 'imported_dlls', get_imports_response, (get_file(hash),), True)
     return json.dumps(response)
 
 @app.route('/file-analysis/<hash>/pe-info', methods=["POST"])
