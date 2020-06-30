@@ -166,6 +166,8 @@ def parse_analysis_result(results):
     av_count = 0
     infected_count = 0
     for av_name, av_result in results.items():
+        if 'error' in av_result and av_result['error']:
+            continue
         av_count += 1
         if av_result['infected']:
             infected_count += 1

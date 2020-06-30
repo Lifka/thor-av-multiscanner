@@ -54,7 +54,7 @@
         };
 
         copyInfo = (info) => {
-            navigator.clipboard.writeText(info);
+            if (info) navigator.clipboard.writeText(info);
         };
 
         copyDetections = () => { copyInfo(this.detections); };
