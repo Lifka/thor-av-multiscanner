@@ -65,7 +65,7 @@ async def file_analysis_result(hash):
             scan_date = get_current_date()
             app.config["files_by_hash"][hash]['scan_date'] = "{} {}".format(scan_date[0], scan_date[1].replace('-', ':')) 
         scan_date_string = app.config["files_by_hash"][hash]['scan_date'] 
-        return { "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon, "scan_date": scan_date_string}
+        return { "response_json": analysis_response, "table_html_scan_results": table_html_scan_results, "av_count": av_count, "infected_count": infected_count, "icon": icon, "scan_date": scan_date_string}
     response = await exec_with_cache(hash, 'detection', get_analysis_result_response, (get_file(hash),), True)
     return json.dumps(response)
 
@@ -75,7 +75,7 @@ async def file_analysis_info(hash):
         file_name = ''.join(file.split('_')[2:])
         file_info = json.loads(get_file_info(file))
         table_html_file_info = parse_analysis_info(file_info, file_name)
-        return { 'table_html_file_info': table_html_file_info }
+        return { "response_json": file_info, 'table_html_file_info': table_html_file_info }
     response = await exec_with_cache(hash, 'info', get_file_info_response, (get_file(hash),))
     return json.dumps(response,)
 
@@ -87,7 +87,7 @@ async def file_analysis_strings(hash):
         strings = json.loads(strings_response)['strings']
         count = len(strings)
         table_html_strings = parse_file_analysis_strings_result(strings)
-        return { 'table_html_strings':table_html_strings, "count": count }
+        return { "response_json": strings, 'table_html_strings':table_html_strings, "count": count }
     response = await exec_with_cache(hash, 'strings', get_strings_response, (get_file(hash),), True)
     return json.dumps(response)
 
@@ -99,7 +99,7 @@ async def file_analysis_imports(hash):
         imports = json.loads(imports_response)['imported_dlls']
         count = len(imports)
         table_html_imports = parse_file_analysis_imports_result(imports)
-        return { 'table_html_imports':table_html_imports, "count": count }
+        return { "response_json": imports, 'table_html_imports':table_html_imports, "count": count }
     response = await exec_with_cache(hash, 'imported_dlls', get_imports_response, (get_file(hash),), True)
     return json.dumps(response)
 
@@ -109,11 +109,12 @@ async def file_analysis_pe_info(hash):
         response = get_pe_info(file)
         pe_info = json.loads(response)
         sections = pe_info['sections']
-        entry_point, target_machine, compilation_timestamp = pe_info['entry_point'], pe_info['target_machine'], pe_info['compilation_timestamp'],
+        entry_point, target_machine, compilation_timestamp = pe_info['entry_point'], pe_info['target_machine'], pe_info['compilation_timestamp']
+        response_json = { 'entry_point': entry_point, 'target_machine': target_machine, 'compilation_timestamp': compilation_timestamp}
         section_count = len(sections)
         table_html_sections = parse_file_analysis_sections_result(sections)
         table_html_pe_info = parse_file_analysis_pe_info_result(entry_point, target_machine, compilation_timestamp)
-        return { 'table_html_sections':table_html_sections, "section_count": section_count, "table_html_pe_info": table_html_pe_info}
+        return { "response_json": response_json, 'table_html_sections':table_html_sections, "section_count": section_count, "table_html_pe_info": table_html_pe_info}
     response = await exec_with_cache(hash, 'pe-info', get_pe_info_response, (get_file(hash),))
     return json.dumps(response)
 

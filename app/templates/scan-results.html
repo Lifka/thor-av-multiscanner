@@ -53,6 +53,11 @@
             displayResults('#pe_info', pe_info); 
         };
 
+        copyInfo = (info) => {
+            navigator.clipboard.writeText(info);
+        };
+
+        copyDetections = () => { copyInfo(this.detections); };
         getDetection = () => {
             $("#rescan-button").addClass("disabled");
             $("#rescan-button").prop('disabled', true);
@@ -70,12 +75,14 @@
                         response_json.result.icon, 
                         response_json.result.scan_date
                     );
+                    this.detections = JSON.stringify(response_json.result.response_json);
                 }
                 $("#rescan-button").removeClass("disabled");
             $("#rescan-button").prop('disabled', false);
             }, '#file_info');
         }
 
+        copyFileInfo = () => { copyInfo(this.file_info); };
         getFileInfo = () => execAjax("info", (response) =>  {
             response_json = jQuery.parseJSON(response)
             if (response_json.status === 'error'){
@@ -83,9 +90,11 @@
                 displayFileInfo('');
             } else if (response_json.status === 'success'){
                 displayFileInfo(response_json.result.table_html_file_info);
+                this.file_info = JSON.stringify(response_json.result.response_json);
             }
         }, '#scan_results');
 
+        copyStrings = () => { copyInfo(this.strings); };
         getStrings = () => { 
             displayStrings('');
             execAjax("strings", (response) =>  {
@@ -95,10 +104,12 @@
                     displayStrings('');
                 } else if (response_json.status === 'success'){
                     displayStrings(response_json.result.table_html_strings, response_json.result.count);
+                    this.strings = JSON.stringify(response_json.result.response_json);
                 }
             }, '#strings'); 
         };
 
+        copyImports = () => { copyInfo(this.imports); };
         getImports = () => { 
             displayImports('');
             execAjax("imports", (response) =>  {
@@ -108,10 +119,12 @@
                     displayImports('');
                 } else if (response_json.status === 'success'){
                     displayImports(response_json.result.table_html_imports, response_json.result.count);
+                    this.imports = JSON.stringify(response_json.result.response_json);
                 }
-            }, '#strings'); 
+            }, '#imports'); 
         };
     
+        copyPE = () => { copyInfo(this.PE_info); };
         getPE = () => { 
             displayPE('');
             execAjax("pe-info", (response) =>  {
@@ -121,6 +134,7 @@
                     displayPE('');
                 } else if (response_json.status === 'success'){
                     displayPE(response_json.result.table_html_sections, response_json.result.table_html_pe_info, response_json.result.section_count);
+                    this.PE_info = JSON.stringify(response_json.result.response_json);
                 }
             }, '#strings'); 
         };
@@ -161,7 +175,16 @@
         <div id="error"></div>
         <div class="card">
             <div class="card-header">
-                <h5>File info</h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col text-left">
+                            <h4>File info</h4>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <button type="button" onclick="copyFileInfo()" class="btn btn-secondary" id="" data-toggle="tooltip" data-placement="right" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-block">
                 <div id="file_info">
@@ -175,7 +198,16 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>AV Engine Detections (<span id="infected_count">0</span>/<span id="av_count">0</span>) <span id="scan_result_icon"></span></h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col text-left">
+                            <h4>AV Engine Detections (<span id="infected_count">0</span>/<span id="av_count">0</span>) <span id="scan_result_icon"></span></h4>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <button type="button" onclick="copyDetections()" class="btn btn-secondary" id="" data-toggle="tooltip" data-placement="right" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-block">
                 <div id="scan_results">
@@ -189,7 +221,16 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Portable Executable Info (PE)</h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col text-left">
+                            <h4>Portable Executable Info (PE)</h4>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <button type="button" onclick="copyPE()" class="btn btn-secondary" id="" data-toggle="tooltip" data-placement="right" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-block">
                 <div id="pe_info">
@@ -212,7 +253,16 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Imported Libraries <span id="imports_total"></span></h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col text-left">
+                            <h4>Imported Libraries <span id="imports_total"></span></h4>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <button type="button" onclick="copyImports()" class="btn btn-secondary" id="" data-toggle="tooltip" data-placement="right" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-block">
                 <div id="imports">
@@ -226,7 +276,16 @@
         </div>
         <div class="card">
             <div class="card-header">
-                <h5>Strings <span id="string_total"></span></h5>
+                <div class="container">
+                    <div class="row">
+                        <div class="col text-left">
+                            <h4>Strings <span id="string_total"></span></h4>
+                        </div>
+                        <div class="col-md-2 text-right">
+                            <button type="button" onclick="copyStrings()" class="btn btn-secondary" id="" data-toggle="tooltip" data-placement="right" title="Copy to clipboard"><i class="fas fa-clipboard"></i></button>
+                        </div>
+                    </div>
+                </div>
             </div>
             <div class="card-block">
                 <div id="strings" class="table-wrapper-scroll-y strings-scrollbar">
