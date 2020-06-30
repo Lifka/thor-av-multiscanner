@@ -29,7 +29,7 @@ def print_file_info(file, json=False):
             print_imports(import_list)
 
 def scan_file(file, json=False):
-    detections = scanner.scan_file_parse_results(loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH), loop)))
+    detections = scanner.scan_file_parse_results(loop.run_until_complete(scanner.scan_file_async(file, get_docker_configuration(DOCKER_CONFIG_PATH))))
     if json:
         response = {}
         response['detections'] = detections
@@ -44,8 +44,15 @@ def list_available_antivirus(json=False):
     else:
         print_av_list(result)
 
+def pull_dockers(json=False):
+    result = loop.run_until_complete(scanner.pull_dockers_async(get_docker_configuration(DOCKER_CONFIG_PATH)))
+    if json:
+        print(result)
+    else:
+        print_pull_dockers(result)
+
 def update_antivirus(json=False):
-    result = loop.run_until_complete(scanner.update_antivirus_async(get_docker_configuration(DOCKER_CONFIG_PATH), loop))
+    result = loop.run_until_complete(scanner.update_antivirus_async(get_docker_configuration(DOCKER_CONFIG_PATH)))
     if json:
         print(result)
     else:
@@ -100,9 +107,17 @@ def print_detections(detections):
         else:
             print('{}: Undetected'.format(av_name))
 
-def print_update(update_result):
+def print_pull_dockers(pull_results):
+    print_header('Pull docker images')
+    for image_name, image_result in pull_results.items():
+        print('{}'.format(image_name))
+        print(' - {}'.format('\n - '.join(map(str, image_result))))
+
+def print_update(update_results):
     print_header('Update antivirus databases')
-    print('{}'.format('\n------------------------------\n\n'.join(map(str, update_result))))
+    for image_name, update_result in update_results.items():
+        print('\n-- {} --'.format(image_name))
+        print('{}'.format('\n'.join(map(str, update_result))))
 
 def print_av_list(av_list):
     print_header('List of available antivirus engine')
@@ -120,6 +135,7 @@ if __name__ == '__main__':
     parser.add_argument('-j', '--json', action='store_true', dest='json', help="Retrive response in JSON format")
     exclusive = parser.add_mutually_exclusive_group()
     exclusive.add_argument('-s', '--scan-file', const='scan_file', type=str, dest='file', nargs='?', help='Scan a specific file')
+    exclusive.add_argument('-p', '--pull-dockers', action='store_const', const='pull_dockers', help='Pull all the images from the configuration file')
     exclusive.add_argument('-l', '--list-avs', action='store_const', const='list_avs', help='List of available antivirus engines')
     exclusive.add_argument('-u', '--update-avs', action='store_const', const='update_avs', help='Update antivirus databases')
     exclusive.add_argument('-i', '--file-info', const='file_info', type=str, dest='fileinfo', nargs='?', help='Retrieve file information (File info, Portable Executable Info, Imported DLLs)')
@@ -141,6 +157,8 @@ if __name__ == '__main__':
                 logging.error("File is missing or not readable")
                 exit(True)
             my_function, my_args = scan_file, (args.file, args.json,)
+        elif args.pull_dockers:
+            my_function, my_args = pull_dockers, (args.json,)
         elif args.list_avs:
             my_function, my_args = list_available_antivirus, (args.json,)
         elif args.update_avs:
