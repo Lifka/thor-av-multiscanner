@@ -1,18 +1,14 @@
 [
     {
         "name":"AVG AntiVirus",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name} --timeout 150",
         "update_command": "{Image} update",
-        "image": "malice/avg",
-        "pull_command": "docker pull {Image}"
+        "image": "malice/avg"
     },
     {
         "name":"Avira",
-        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}",
-        "update_command": "{Image} update",
-        "license": "licenses/avira/hbedv.key",
         "image": "malice/avira",
-        "pull_command": "docker pull {Image}"
+        "license": "\"`pwd`/licenses/avira/hbedv.key:/opt/avira/hbedv.key\""
     },
     {
         "name":"ClamAV",
@@ -28,6 +24,7 @@
     },
     {
         "name":"Dr. Web",
+        "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name} --timeout 150",
         "image": "malice/drweb"
     },
     {

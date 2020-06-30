@@ -94,13 +94,13 @@ def print_imports(imported_dlls):
 def print_detections(detections):
     infected_count = 0
     for av_name, av_results in detections.items():
-        if 'infected' not in av_results:
+        if 'infected' not in av_results or 'error' in av_results and av_results['error']:
             continue
         if av_results['infected'] and 'result' in av_results:
             infected_count += 1
     print_header('AV Engine Detections ({}/{})'.format(infected_count, len(detections)))
     for av_name, av_results in detections.items():
-        if 'infected' not in av_results:
+        if 'infected' not in av_results or 'error' in av_results and av_results['error']:
             continue
         if av_results['infected'] and 'result' in av_results:
             print('{}: {}'.format(av_name, av_results['result']))
@@ -110,8 +110,8 @@ def print_detections(detections):
 def print_pull_dockers(pull_results):
     print_header('Pull docker images')
     for image_name, image_result in pull_results.items():
-        print('{}'.format(image_name))
-        print(' - {}'.format('\n - '.join(map(str, image_result))))
+        print('\n-- {} --'.format(image_name))
+        print('{}'.format('\n'.join(map(str, image_result))))
 
 def print_update(update_results):
     print_header('Update antivirus databases')
