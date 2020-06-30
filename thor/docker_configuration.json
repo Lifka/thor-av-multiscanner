@@ -8,7 +8,7 @@
     {
         "name":"Avira",
         "image": "malice/avira",
-        "license": "\"`pwd`/licenses/avira/hbedv.key:/opt/avira/hbedv.key\""
+        "license": "\"`pwd`/../licenses/avira/hbedv.key:/opt/avira/hbedv.key\""
     },
     {
         "name":"ClamAV",
