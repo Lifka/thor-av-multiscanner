@@ -228,7 +228,7 @@ It is possible to access from browsing using the URL: `http://127.0.0.1:5000/`.
 
 At the moment, the application uses [Malice dockers images](https://hub.docker.com/u/malice "Malice dockers images"). But it can be configured to use any other image, as long as it returns the result in a similar JSON format.
 
-This application uses a file in JSON format where the Docker commands that will be used for operations with each of the antivirus are indicated. Each object in the list represents an antivirus configured in a Docker container.
+This application uses a file in JSON format that indicates the Docker commands to be used for operations with each of the antivirus engines. Each object in the list represents an antivirus configured in a Docker container.
 
 ```
 {
@@ -260,7 +260,8 @@ Optional parameters:
 }
 ```
 
-The commands are parameterized, you caan use the following tokens:
+The commands are parameterized, you can use the following tokens:
+
 * `File_path`: This token will be replaced by the absolute path of the file to analyze.
 * `File_name`: This token will be replaced by the name of the file to analyze.
 * `License`: This token will be replaced by the license include in the configuration.
@@ -300,7 +301,7 @@ View [docker_configuration.json](thor/docker_configuration.json).
 
 ## About
 
-This project was carried out for a Cybersecurity Master Degree at the [University of Granada](https://www.ugr.es/). Using Python 3 and Javascript, in addition to [Quart](https://pypi.org/project/Quart/), [jQuery](https://jquery.com/), and [Bootstrap](https://getbootstrap.com/). Including some external libraries like [Dropzone](https://www.dropzonejs.com/) and [fleep](https://pypi.org/project/fleep/), and borrowing [Malice](https://github.com/maliceio)'s Docker images.
+This project was carried out for a Master's Degree in Cyber Security at the [University of Granada](https://www.ugr.es/). Using Python 3 and Javascript, in addition to [Quart](https://pypi.org/project/Quart/), [jQuery](https://jquery.com/), and [Bootstrap](https://getbootstrap.com/). Including some external libraries like [Dropzone](https://www.dropzonejs.com/) and [fleep](https://pypi.org/project/fleep/), and borrowing [Malice](https://github.com/maliceio)'s Docker images.
 
 
 
