@@ -120,7 +120,7 @@ def print_update(update_results):
         print('{}'.format('\n'.join(map(str, update_result))))
 
 def print_av_list(av_list):
-    print_header('List of available antivirus engine')
+    print_header('List of available antivirus engines')
     print('{}'.format('\n'.join(map(str, av_list))))
 
 def exit(with_help=False):

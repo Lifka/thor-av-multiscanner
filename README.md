@@ -1,22 +1,48 @@
 # Thor AV Multiscanner
-Scan files to perform static analysis. This software allows to obtain information about a file, such as extracting imports, sections, hashes, etc. In addition, it allows you to analyze a file with different antivirus engines using Dockers.
+Scan files for static analysis. This software allows obtaining information from a file; such as imported libraries, PE, hashes, etc. Also, it allows you to scan a file with different antivirus engines using Dockers.
 
 ## CLI
 
 
 ```
-usage: thor.py [-h] [-d] [-s [FILE] | -l | -u]
+usage: thor.py [-h] [-d] [-j] [-s [FILE] | -p | -l | -u | -i [FILEINFO]]
 
 optional arguments:
   -h, --help            show this help message and exit
   -d, --debug           Enable debug mode
+  -j, --json            Retrive response in JSON format
   -s [FILE], --scan-file [FILE]
                         Scan a specific file
+  -p, --pull-dockers    Pull all the images from the configuration file
   -l, --list-avs        List of available antivirus engines
   -u, --update-avs      Update antivirus databases
+  -i [FILE], --file-info [FILEINFO]
+                        Retrieve file information (File info, Portable Executable Info, Imported DLLs)
+
 ```
 
 ### Usage examples
+
+#### Get detections using dockers
+
+```
+$ thor.py -s ../sample_files/bb7425b82141a1c0f7d60e5106676bb1
+
+------------------------------------------------
+           AV Engine Detections (6/11)          
+------------------------------------------------
+AVG AntiVirus: Trojan horse Agent5.CDE
+Avira: HEUR/AGEN.1022518
+ClamAV: Win.Malware.Agent-6342616-0
+Comodo Internet Security: Malware
+eScan Antivirus: Undetected
+Dr. Web: Undetected
+F-PROT Antivirus: Undetected
+McAfee: RDN/Generic.grp
+Sophos: Undetected
+Windows Defender: Trojan:Win32/Aenjaris.CT!bit
+ZONER AntiVirus: Undetected   
+```
 
 #### Get information from a file
 
@@ -192,30 +218,91 @@ It is possible to access from browsing using the URL: `http://127.0.0.1:5000/`.
 
 ![AV Engine Detections](screenshots/screenshot6.png)
 
-![Portable Executable Info (PE)](screenshots/screenshot3.png)
+[Full page screenshot](screenshots/full_page_screenshot.png)
 
-![Imports](screenshots/screenshot4.png)
+### Video
 
-![Strings](screenshots/screenshot5.png)
+[![Demo](https://img.youtube.com/vi/1I53Xxv1XiY/2.jpg)](https://youtu.be/1I53Xxv1XiY)
 
 ## Configuration
+
+At the moment, the application uses [Malice dockers images](https://hub.docker.com/u/malice "Malice dockers images"). But it can be configured to use any other image, as long as it returns the result in a similar JSON format.
+
 This application uses a file in JSON format where the Docker commands that will be used for operations with each of the antivirus are indicated. Each object in the list represents an antivirus configured in a Docker container.
 
 ```
 {
-    "name":"AVG AntiVirus",
-    "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" malice/avg {File_name}",
-    "update_command": "malice/avg update"
+   "name":"McAfee",
+   "image": "malice/mcafee"
 }
 ```
 
-The commands are parameterized, being necessary to indicate the following tokens:
-* File_path: This token will be replaced by the path of the file to analyze.
-* File_name: This token will be replaced by the name of the file to analyze.
+The mandatory parameters are:
+
+* `name`: Antivirus name.
+* `image`: Docker image to be used.
+
+Optional parameters:
+
+* `scan_command`: Command to be used to scan a file.
+* `update_command`: Command to be used to update the engine.
+* `license_command`: Command to set license during a scan.
+* `license`: License.
+
+```
+{
+   "name":"AVG AntiVirus",
+   "image": "malice/avg",
+   "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name} --timeout 150",
+   "update_command": "{Image} update",
+   "license": "\"`pwd`/../licenses/avg/hbedv.key:/opt/avg/hbedv.key\"",
+
+}
+```
+
+The commands are parameterized, you caan use the following tokens:
+* `File_path`: This token will be replaced by the absolute path of the file to analyze.
+* `File_name`: This token will be replaced by the name of the file to analyze.
+* `License`: This token will be replaced by the license include in the configuration.
+
+Defaults commands:
+
+```
+DEFAULT_UPDATE_COMMAND = "{Image} update"
+DEFAULT_SCAN_COMMAND = "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name}"
+DEFAULT_LICENSE_COMMAND = "-v {License}"
+```
 
 ## AntiVirus
 
+Antivirus included at the moment:
+
+```
+$ python3 thor.py -l
+
+-------------------------------------------------------
+           List of available antivirus engines          
+-------------------------------------------------------
+AVG AntiVirus
+Avira
+ClamAV
+Comodo Internet Security
+eScan Antivirus
+Dr. Web
+F-PROT Antivirus
+McAfee
+Sophos
+Windows Defender
+ZONER AntiVirus
+```
+
+View [docker_configuration.json](thor/docker_configuration.json).
+
 ## About
+
+This project was carried out for a Cybersecurity Master Degree at the [University of Granada](https://www.ugr.es/). Using Python 3 and Javascript, in addition to [Quart](https://pypi.org/project/Quart/), [jQuery](https://jquery.com/), and [Bootstrap](https://getbootstrap.com/). Including some external libraries like [Dropzone](https://www.dropzonejs.com/) and [fleep](https://pypi.org/project/fleep/), and borrowing [Malice](https://github.com/maliceio)'s Docker images.
+
+
 
 ## Copyright
 © 2020 Copyright: [javierizquierdovera.com](https://javierizquierdovera.com/).
