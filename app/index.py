@@ -5,11 +5,11 @@
 # This program is free software, you can redistribute it and/or modify it under the terms of GPLv2.
 
 from utils import get_file_by_hash_in_dir, save_file, get_file_hash, get_current_date
-import json, os
+import json, os, argparse
 from os.path import abspath
 
 from quart import Quart, render_template, request
-from scanner_wrapper import scan_file, get_file_info, get_file_strings, get_imported_dlls, get_pe_info
+from scanner_controller import scan_file, get_file_info, get_file_strings, get_imported_dlls, get_pe_info
 
 VAULT = "vault"
 DOCKER_CONFIG_PATH = "docker_configuration.json"
@@ -155,7 +155,7 @@ def parse_analysis_info(file_info, file_name):
     if len(file_info['magic_number']['extension']) > 0:
         result_html += '<tr><td>Extension</td><td>{}</td></tr>'.format(file_info['magic_number']['extension'][0])
     if len(file_info['magic_number']['mime']) > 0:
-        result_html += '<tr><td>Mime</td><td>{}</td></tr>'.format(file_info['magic_number']['mime'][0])
+        result_html += '<tr><td>MIME</td><td>{}</td></tr>'.format(file_info['magic_number']['mime'][0])
     if len(file_info['magic_number']['type']) > 0:
         result_html += '<tr><td>File type</td><td>{}</td></tr>'.format(file_info['magic_number']['type'][0])
     result_html += '</tbody></table>'
@@ -221,4 +221,21 @@ def parse_standard_table(results, item_class):
     return result_html
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('-d', '--debug', action='store_true', dest='debug', help="Enable debug mode")
+    parser.add_argument('-i', '--host', dest='host', help="Set host on which the web application runs. Default: 127.0.0.1.")
+    parser.add_argument('-p', '--port', dest='port', help="Set port on which the web application runs. Default: 5000.")
+    args = parser.parse_args()
+
+    host="127.0.0.1"
+    port="5000"
+    debug=False
+
+    if args.host:
+        host = args.host
+    if args.port:
+        port = args.port
+    if args.debug:
+        debug = True
+
+    app.run(host=host, port=port, debug=debug)

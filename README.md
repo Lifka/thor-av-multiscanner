@@ -5,7 +5,7 @@ Scan files for static analysis. This software allows you to scan a file with dif
 
 
 ```
-usage: thor.py [-h] [-d] [-j] [-s [FILE] | -p | -l | -u | -i [FILEINFO]]
+usage: thor.py [-h] [-d] [-j] [-s [FILE] | -p | -l | -u | -i [FILE]]
 
 optional arguments:
   -h, --help            show this help message and exit
@@ -16,7 +16,7 @@ optional arguments:
   -p, --pull-dockers    Pull all the images from the configuration file
   -l, --list-avs        List of available antivirus engines
   -u, --update-avs      Update antivirus databases
-  -i [FILE], --file-info [FILEINFO]
+  -i [FILE], --file-info [FILE]
                         Retrieve file information (File info, Portable Executable Info, Imported DLLs)
 
 ```
@@ -202,13 +202,26 @@ $ python3 thor.py -i sample_files/file1.random -j
 ## Web APP
 The web application will allow you to perform the same operations as the CLI, but with a friendlier interface. As a difference, it has a cache that will avoid having to scan the same file several times.
 
-Launch web application:
+Run web application:
 
 ```
-$ cd app; python3 index.py
+$ cd app
 ```
 
-It is possible to access from browsing using the URL: `http://127.0.0.1:5000/`.
+```
+$ python3 index.py -h
+usage: index.py [-h] [-d] [-i] [-p]
+
+optional arguments:
+  -h, --help   show this help message and exit
+  -d, --debug  Enable debug mode
+  -i, --host   Set host on which the web application runs. Default: 127.0.0.1.
+  -p, --port   Set port on which the web application runs. Default: 5000.
+```
+
+```
+$ python3 index.py
+```
 
 ### Screenshots
 
@@ -255,8 +268,7 @@ Optional parameters:
    "image": "malice/avg",
    "scan_command": "--rm -v \"{File_path}:/malware/{File_name}\" {Image} {File_name} --timeout 150",
    "update_command": "{Image} update",
-   "license": "\"`pwd`/../licenses/avg/hbedv.key:/opt/avg/hbedv.key\"",
-
+   "license": "\"`pwd`/../licenses/avg/hbedv.key:/opt/avg/hbedv.key\""
 }
 ```
 
