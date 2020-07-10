@@ -1,5 +1,5 @@
 # Thor AV Multiscanner
-Scan files for static analysis. This software allows you to scan a file with different antivirus engines using Dockers. Also, it allows obtaining information from a file; such as imported libraries, PE, hashes, etc.
+Static analysis of malware using Docker. This software allows you to scan a file with different antivirus engines. Also, it allows obtaining information from a file; such as imported libraries, PE, hashes, etc.
 
 ## CLI
 
